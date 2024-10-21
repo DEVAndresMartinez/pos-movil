@@ -1,0 +1,99 @@
+.profile-card {
+    width: 80%;
+    margin: 0 auto;
+    padding: 20px;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    text-align: center; /* Add this line to center everything */
+    font-family: Lato, Helvetica, sans-serif;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.profile-image img {
+    width: 300px;
+    height: 300px;
+    border-radius: 50%; /* This makes the image circular */
+    margin-bottom: 50px;
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Align items to the start */
+    font-family: Lato, Helvetica, sans-serife;
+
+}
+
+
+.p-field {
+    display: flex;
+    justify-content: space-between; /* Add this line to put space between the label and the data */
+    width: 80%; /* Make the field take up the full width */
+    margin-bottom: 10px; /* Add some space below each field */
+    margin-top: 15px;
+}
+
+.p-field label {
+    margin-right: 10px; /* Add some space to the right of the label */
+    font-weight: bold;
+    font-size: 150%;
+    margin-left: 15%;
+}
+
+.p-field span {
+    display: inline-block;
+    min-width: 60%; /* Adjust this value as needed */
+    margin-left: 5%; /* Add some space to the left of the span */
+    padding: 10px 20px; /* Add padding to the span */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    text-align: left;
+    background-color: #162A41;
+    font-weight: lighter;
+    font-size: 100%;
+
+
+}
+
+.margin-right {
+    margin-right: 45vw;
+}
+
+.height {
+    height: 4.5vh;
+}
+
+
+@media (max-width: 750px) {
+    .profile-card {
+        width: 100%;
+    }
+
+    .profile-image img {
+        width: 200px;
+        height: 200px;
+    }
+
+    .p-field {
+        width: 100%;
+    }
+
+    .p-field label {
+        font-size: 120%;
+        margin-left: 0;
+    }
+
+    .p-field span {
+        font-size: 100%;
+        min-width: 70%;
+    }
+    
+    .margin-right {
+        margin-right: 0;
+    }
+}

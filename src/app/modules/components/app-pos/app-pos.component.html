@@ -1,0 +1,354 @@
+<div *ngIf="loading" class="loading-container">
+    Cargando...
+</div>
+<div *ngIf="!loading">
+    <div class="gird">
+        <form [formGroup]="saleForm">
+            <div class="flex flex-wrap md:flex-nowrap justify-content-between col-12 gap-3">
+                <div class="card col-12 md:col-5 flex gap-3 fac">
+                    <div class="flex flex-wrap justify-content-between align-items-center">
+                        <span>Cliente: <b>{{ nameCustomer }}</b> </span>
+                        <div class="flex w-fit flex-wrap align-items-center gap-2">
+                            <i class="pi pi-info-circle" style="font-size: 1.5rem" pTooltip="Sin digito de verificación" tooltipPosition="right"></i>
+                            <input pInputText type="text" placeholder="C.C / Cliente" formControlName="identification"
+                                (keyup.enter)="createSale()" (keydown)="preventEnter($event)" />
+                            <button [disabled]="idSale !== ''" pButton pRipple icon="pi pi-plus" label="Nuevo" (click)="openNew()"></button>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="info">
+                        <table class="table-header w-full">
+                            <thead>
+                                <tr class="w-full">
+                                    <th style="text-align: start; width: 35%;">Nombre Producto</th>
+                                    <th style="width: 20%;">CANTIDAD</th>
+                                    <th style="width: 20%;">PRECIO UND</th>
+                                    <th style="width: 20%;">SUB TOTAL</th>
+                                    <th style="width: 5%;"></th>
+                                </tr>
+                            </thead>
+                            <tbody formArrayName="salesDetail">
+                                <tr *ngFor="let detail of salesDetail.controls; let i = index" [formGroupName]="i"
+                                    class="w-full">
+                                    <td style="width: 35%;">{{ detail.value.name }}</td>
+                                    <td style="width: 20%;">
+                                        <div class="flex justify-content-between align-items-center">
+                                            <button class="btn-act" pButton pRipple icon="pi pi-minus"
+                                                (click)="decrementSaleDetail(i)"></button>
+                                            <input maxlength="detail.actualQuantity" pInputText type="number"
+                                                formControlName="quantity" class="custom-input w-4rem"
+                                                (input)="validateQuantity($event, detail.value.actualQuantity)" />
+                                            <button class="btn-act" pButton pRipple icon="pi pi-plus"
+                                                (click)="incrementSaleDetail(i)"></button>
+                                        </div>
+                                    </td>
+                                    <td style="width: 20%; text-align: right; padding-right: 20px">
+                                        {{ detail.value.price | currency:'COP':'symbol-narrow':'1.0-0'}}
+                                    </td>
+                                    <td style="width: 20%; text-align: right; padding-right: 20px">
+                                        {{ detail.value.quantity * detail.value.price |
+                                        currency:'COP':'symbol-narrow':'1.0-0'}}
+                                    </td>
+                                    <td style="width: 5%;">
+                                        <button class="btn-trash" pButton pRipple icon="pi pi-trash"
+                                            (click)="removeSaleDetail(i)"></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <hr>
+                    <div class="w-full">
+                        <div class="w-full flex flex-column gap-2">
+                            <div class="w-full flex row justify-content-between">
+                                <td style="font-size: 16px;">Cantidad Productos: </td>
+                                <td style="font-size: 16px;"> {{ cantProducts }} </td>
+                            </div>
+                            <div class="w-full flex row justify-content-between">
+                                <td style="font-size: 16px;">Iva: 19%</td>
+                                <td style="font-size: 16px;"> {{ totalIva || 0 | currency:'COP':'symbol-narrow':'1.0-0' }} </td>
+                            </div>
+                            <div class="w-full flex row justify-content-between">
+                                <td style="font-size: 16px;">Impoconsumo: 8% </td>
+                                <td style="font-size: 16px;"> {{ totalIC || 0 | currency:'COP':'symbol-narrow':'1.0-0' }} </td>
+                            </div>
+                            <div class="w-full flex row justify-content-between">
+                                <td style="font-size: 16px;">Sub Total: </td>
+                                <td style="font-size: 16px;"> {{ subTotal || 0 | currency:'COP':'symbol-narrow':'1.0-0'}}
+                                </td>
+                            </div>
+                            <div class="w-full flex row justify-content-between">
+                                <td style="font-size: 20px; font-weight: bold;">Total: </td>
+                                <td style="font-size: 20px; font-weight: bold;"> {{ total |
+                                    currency:'COP':'symbol-narrow':'1.0-0'}} </td>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="w-full data-factura">
+                        <div class="w-full flex flex-row justify-content-around actions gap-2">
+                            <button *ngIf="idSale !== ''" pButton pRipple icon="pi pi-times"
+                                label="CANCELAR" (click)="cancelarVenta()" class="btn p-button-danger"></button>
+                            <button *ngIf="idSale !== ''" pButton pRipple icon="pi pi-stop-circle"
+                                label="GUARDAR" (click)="saveSale()" class="btn p-button"></button>
+                            <button *ngIf="idSale === ''" pButton pRipple icon="pi pi-play"
+                                label="CARGAR" (click)="loadSale()" class="btn p-button"></button>
+                            <button *ngIf="idSale !== ''" pButton pRipple icon="pi pi-money-bill"
+                                label="COBRAR" (click)="openCharge()" class="btn p-button-success"></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card col-12 md:col-7">
+                    <div class="w-full list-products">
+                        <div class="flex gap-2">
+                            <span class="w-12rem block mt-2 md:mt-0 p-input-icon-left search-bar">
+                                <i class="pi pi-bars"></i>
+                                <input #eanInput type="text" pInputText (input)="onEanFilter(dt, $event)"
+                                    placeholder="EAN" class="w-full" autofocus (keydown)="handleEanEnter(dt, $event)"
+                                    maxlength="13">
+                            </span>
+                            <span class="w-full block mt-2 md:mt-0 p-input-icon-left search-bar">
+                                <i class="pi pi-search"></i>
+                                <input type="text" pInputText (input)="onGlobalFilter(dt, $event)"
+                                    placeholder="Buscar producto..." class="w-full" (keydown)="preventEnter($event)">
+                            </span>
+                        </div>
+                        <br>
+                        <p-table #dt [value]="products" [columns]="cols" responsiveLayout="scroll" [rows]="10"
+                            [globalFilterFields]="['ingredient.name', 'ingredient.description', 'ingredient.sku', 'ingredient.unit.abbreviation', 'actualQuantity', 'minQuantity', 'price']"
+                            [(selection)]="selectedProduct!" [rowHover]="true" dataKey="id" sortField="ingredient.name"
+                            [sortOrder]="1">
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th style="width: 25%;">Código</th>
+                                    <th style="width: 25%;">Nombre</th>
+                                    <th style="width: 30%;">Descripción</th>
+                                    <th style="width: 20%; text-align: right;">Precio Venta</th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-product>
+                                <tr class="w-full product-item" (click)="addSaleDetail(product)" [ngClass]="{
+                                    'status-green': product.actualQuantity > product.minQuantity,
+                                    'status-yellow': product.actualQuantity <= product.minQuantity,
+                                    'status-red': product.actualQuantity === 0
+                                    }">
+                                    <td style="width: 25%;">
+                                        {{ product.ingredient.sku }}
+                                    </td>
+                                    <td style="width: 25%;">
+                                        {{ product.ingredient.name }}
+                                    </td>
+                                    <td style="width: 30%;">
+                                        {{ product.ingredient.description }}
+                                    </td>
+                                    <td style="width: 20%; text-align: right;">
+                                        {{ product.price | currency:'COP':'symbol-narrow':'1.0-0' }}
+                                    </td>
+                                </tr>
+                            </ng-template>
+                        </p-table>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <p-dialog [(visible)]="unitDialog" header="Detalles del cliente" [modal]="true">
+            <form [formGroup]="finalCustomerForm" (ngSubmit)="saveFinalCustomer()"
+                class="flex flex-wrap p-fluid form-client col-12">
+                <div class="field col-12 md:col-6">
+                    <label for="personType">Tipo Persona <span style="color: #EF0000;">*</span> </label>
+                    <p-dropdown [options]="personType" optionLabel="name"
+                        optionValue="id" formControlName="personType"
+                        placeholder="Seleccione el tipo de persona"></p-dropdown>
+                </div>
+                <div class="field col-12 md:col-6">
+                    <label for="identificationTypeId">Tipo Identificación <span style="color: #EF0000;">*</span> </label>
+                    <p-dropdown [options]="identificationType" optionLabel="name" optionValue="id" [filter]="true"
+                        filterBy="name" formControlName="identificationTypeId"
+                        placeholder="Seleccione el tipo de identificación"></p-dropdown>
+                </div>
+                <div class="field col-12 md:col-6">
+                    <label for="identification">Número Identificación <span style="color: #EF0000;">*</span> <span style="font-size: 10px;" *ngIf="finalCustomerForm.get('personType')?.value === 1"> (Sin dígito de Verificación)</span> </label>
+                    <p-inputNumber [maxlength]="10" id="identification" formControlName="identification"
+                        placeholder="Digite el número de identificación"></p-inputNumber>
+                </div>
+                <div class="btn-active field col-12 md:col-6" *ngIf="finalCustomerForm.get('personType')?.value === 1">
+                    <label for="identificationDv">Dígito de verificación</label>
+                    <input type="number" pInputText id="identificationDv" formControlName="identificationDv"
+                        placeholder="Digite el dígito de verificación" [required]="finalCustomerForm.get('personType')?.value === 1" [disabled]="true">
+                </div>
+                <div class="field col-12 md:col-6">
+                    <label for="email">Correo Electrónico <span style="color: #EF0000;">*</span> </label>
+                    <input type="email" pInputText id="email" formControlName="email"
+                        placeholder="Digite el correo electrónico" maxlength="50">
+                </div>
+                <div class="field col-12 md:col-6" *ngIf="finalCustomerForm.get('personType')?.value === 2">
+                    <label for="firstName">Primer Nombre Cliente <span style="color: #EF0000;">*</span> </label>
+                    <input type="text" pInputText id="firstName" formControlName="firstName"
+                        placeholder="Digite el primer nombre">
+                </div>
+
+                <div class="field col-12 md:col-6" *ngIf="finalCustomerForm.get('personType')?.value === 2">
+                    <label for="secondName">Segundo Nombre Cliente</label>
+                    <input type="text" pInputText id="secondName" formControlName="secondName"
+                        placeholder="Digite el segundo nombre (opcional)">
+                </div>
+                <div class="field col-12 md:col-6" *ngIf="finalCustomerForm.get('personType')?.value === 2">
+                    <label for="lastName">Apellidos Cliente <span style="color: #EF0000;">*</span> </label>
+                    <input type="text" pInputText id="lastName" formControlName="lastName"
+                        placeholder="Digite los apellidos">
+                </div>
+                <div class="field col-12 md:col-6" *ngIf="finalCustomerForm.get('personType')?.value === 1">
+                    <label for="businessName">Razón Social <span style="color: #EF0000;">*</span> </label>
+                    <input type="text" pInputText id="businessName" formControlName="businessName"
+                        placeholder="Digite la razón social">
+                </div>
+                <div class="field col-12 md:col-6" *ngIf="custom === true">
+                    <label for="countryId">País</label>
+                    <p-dropdown [options]="countries" optionLabel="name" optionValue="id" formControlName="countryId"
+                        placeholder="Seleccione un País"></p-dropdown>
+                </div>
+                <div class="field col-12 md:col-6" *ngIf="custom === true">
+                    <label for="departmentId">Departamento / Estado</label>
+                    <p-dropdown [options]="departments" optionLabel="name" optionValue="id" [filter]="true"
+                        filterBy="name" formControlName="departmentId" placeholder="Seleccione un Departamento / Estado"></p-dropdown>
+                </div>
+                <div class="field col-12 md:col-6" *ngIf="custom === true">
+                    <label for="cityId">Municipio / Ciudad</label>
+                    <p-dropdown [options]="cities" optionLabel="name" optionValue="id" [filter]="true" filterBy="name"
+                        formControlName="cityId" placeholder="Seleccione un Municipio / Ciudad"></p-dropdown>
+                </div> 
+                <div class="field col-12 md:col-6" *ngIf="custom === true">
+                    <label for="address">Dirección</label>
+                    <input type="text" pInputText id="address" formControlName="address"
+                        placeholder="Digite la dirección">
+                </div>
+                <div class="field col-12 md:col-6" *ngIf="custom === true">
+                    <label for="phoneNumber">Teléfono</label>
+                    <input type="text" pInputText id="phoneNumber" formControlName="phoneNumber"
+                        placeholder="Digite el teléfono" maxlength="10">
+                </div>
+                
+                <div class="field col-12 md:col-6" *ngIf="finalCustomerForm.get('personType')?.value === 1 && custom === true">
+                    <label for="regimeType">Régimen</label>
+                    <p-dropdown [options]="regimeType" optionLabel="name" optionValue="id" formControlName="regimeType"
+                        placeholder="Seleccione el tipo de régimen"></p-dropdown>
+                </div>
+                <div class="field col-12 md:col-6" *ngIf="finalCustomerForm.get('personType')?.value === 1 && custom === true">
+                    <label for="tax">Impuesto</label>
+                    <p-dropdown [options]="taxesType" optionLabel="name" optionValue="codeConexus" [filter]="true"
+                        filterBy="name" formControlName="tax" placeholder="Seleccione el impuesto"></p-dropdown>
+                </div>
+                <div class="field col-12 md:col-6" *ngIf="finalCustomerForm.get('personType')?.value === 1 && custom === true">
+                    <label for="taxResponsible">Impuesto Responsable</label>
+                    <input type="text" pInputText id="taxResponsible" formControlName="taxResponsible"
+                        placeholder="Digite las responsabilidades del impuesto">
+                </div>
+            </form>
+            <ng-template pTemplate="footer">
+                <div class="flex justify-content-center md:justify-content-center flex-wrap">
+                    <button *ngIf="!custom" pButton label="Personalizado" icon="pi pi-user-plus" class="p-button-text" (click)="finalCustomerCustom()"></button>
+                    <button *ngIf="custom" pButton label="Básico" icon="pi pi-user-minus" class="p-button-text" (click)="finalCustomerCustom()"></button>
+                    <div class="flex">
+                        <button pButton pRipple label="Cancelar" icon="pi pi-times" class="p-button-text"
+                            (click)="hideDialog()"></button>
+                        <button pButton pRipple label="Guardar" icon="pi pi-check" class="p-button-text"
+                            (click)="saveFinalCustomer()"></button>
+                    </div>
+                </div>
+            </ng-template>
+        </p-dialog>
+        <p-dialog [(visible)]="paymentDialog" header="Confirmar Venta" [modal]="true" class="grid dialog-pay">
+            <ng-template pTemplate="caption">
+                <div class="flex flex-wrap justify-content-between">
+                    <div class="col-12 md:col-6 field">
+                        <label class="label" for="payment">Monto Recibido</label>
+                        <p-inputNumber [style]="{ width: '100%' }" class="w-full peyment-input peyment-input-number" placeholder="Digite el valor del monto recibido" id="payment" [(ngModel)]="payment" inputId="payment" mode="decimal" [minFractionDigits]="0" [maxFractionDigits]="0"/>
+                    </div>
+                    <div class="col-12 md:col-6 field">
+                        <label class="label" for="total">Valor a Pagar</label>
+                        <label class="w-full peyment-input" pInputText id="total"> {{ total | currency:'COP':'symbol-narrow':'1.0-0' }} </label>
+                    </div>
+                </div>
+                <div class="w-full flex flex-wrap justify-content-between">
+                    <div class="col-12 md:col-6 field">
+                        <label class="label" for="taxResponsible">Cambio</label>
+                        <label class="w-full peyment-input" type="text" pInputText id="change">{{ change | currency:'COP':'symbol-narrow':'1.0-0'}}</label>
+                    </div>
+                    <div class="col-12 md:col-6 field">
+                        <label class="label" for="printSize">Impresora</label>
+                        <p-dropdown [style]="{ width: '100%' }" class="w-full peyment-input peyment-input-number" [options]="printerSize" optionLabel="name" optionValue="id" [(ngModel)]="printSize"
+                        placeholder="Seleccionar Impresora"></p-dropdown>
+                    </div>
+                </div>
+                <div class="w-full flex flex-wrap justify-content-between">
+                    <div class="col-12 field ">
+                        <label class="label" for="method">Forma de Pago</label>
+                        <div class="w-full paymentMethodClass">
+                            <button *ngFor="let method of paymentMethod" class="button-pay felx w-11rem" pButton pRipple
+                            (click)="setPaymentMethod(method.id)" [ngClass]="{'selected': selectedPaymentMethod === method.id}">
+                            <img [src]="getPaymentIcon(method.name)" alt="{{method.name}}" class="payment-icon"><p style="margin: 0;">{{method.name}}</p></button>
+    
+                        </div>
+                    </div>
+                </div>
+            </ng-template>
+            <ng-template pTemplate="footer">
+                <div class="w-full flex justify-content-center flex-wrap">
+                    <button pButton pRipple label="Cancelar" icon="pi pi-times" class="p-button-text"
+                        (click)="hidePaymentDialog()"></button>
+                    <button pButton pRipple label="FAC POS" icon="pi pi-check" class="p-button-text"
+                        (click)="confirmLocalSale()"></button>
+                    <button pButton pRipple label="EMITIR FAC-E DIAN" icon="pi pi-check" class="p-button-text"
+                        (click)="confirmDianSale()"></button>
+                </div>
+            </ng-template>
+        </p-dialog>
+        <p-dialog [(visible)]="cancelDialog" header="Cancelar Venta" [modal]="true" [style]="{ width: '450px' }">
+            <div class="flex align-items-center justify-content-center">
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem;"></i>
+                <span>Esta seguro cancelar está venta? </span>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="Cancelar"
+                    (click)="cancelDialog = false"></button>
+                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Confirmar"
+                    (click)="confirmCancel()"></button>
+            </ng-template>
+        </p-dialog>
+        <p-dialog [(visible)]="saveDialog" header="Guardar Venta" [modal]="true" [style]="{ width: '450px' }">
+            <div class="flex align-items-center justify-content-center">
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem;"></i>
+                <span>Se Guardara con la identificación del cliente</span>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="Cancelar"
+                    (click)="saveDialog = false"></button>
+                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Confirmar"
+                    (click)="saveSaleDetails()"></button>
+            </ng-template>
+        </p-dialog>
+        <p-dialog [(visible)]="linkClientDialog" header="Iniciar Venta" [modal]="true" [style]="{ width: '450px' }">
+            <div class="flex align-items-center justify-content-center">
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem;"></i>
+                <span>Se iniciara la venta con el Consumidor Final 222222222222</span>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="Cancelar"
+                    (click)="linkClientDialog = false" (focus)="false"></button>
+                <button pButton pRipple icon="pi pi-check" autofocus class="p-button-text" label="Aceptar"
+                    (keydown.enter)="createSale()" (keydown)="preventEnter($event)" (click)="createSale()"></button>
+            </ng-template>
+        </p-dialog>
+        <p-dialog [(visible)]="uploadDialog" header="Cargar Venta" [modal]="true" [style]="{ width: '450px' }">
+            <div class="field flex flex-column col-12">
+                <label for="customerIdtoLoad" class="font-medium text-900">Cual es la identificación del cliente?</label>
+                <input type="text" id="customerIdtoLoad" pInputText [(ngModel)]="customerIdtoLoad" placeholder="Digite la identificación del cliente" icon="pi pi-DOLLAR" (keydown.enter)="loadSaleForEdit()">
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="Cancelar"
+                    (click)="uploadDialog = false"></button>
+                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Aceptar"
+                    (click)="loadSaleForEdit()"></button>
+            </ng-template>
+        </p-dialog>
+    </div>
+</div>

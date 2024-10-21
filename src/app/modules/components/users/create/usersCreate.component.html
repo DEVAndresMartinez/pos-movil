@@ -1,0 +1,105 @@
+<div *ngIf="loading" class="loading-container">
+    Cargando...
+</div>
+
+<div *ngIf="!loading">
+    <div class="card">
+        <div class="flex flex-wrap gap-2 align-items-center justify-content-between">
+            <span class="text-900 text-xl font-bold mb-4 block">{{ isEdit ? 'Editar Usuario' : isView ? 'Ver Usuario': 'Crear Usuario' }}</span>
+            <button (click)="navigateToUpdatePassword()" pButton class="p-button-outlined w-full sm:w-auto flex-order-0 sm:flex-order-1" icon="pi pi-unlock" label="Actualizar Contraseña" *ngIf="!isLoginUser && isEdit && (this.permissions.includes('change-users-password' ) || this.isAdmin())"></button>
+            <button (click)="navigateToUpdatePassword()" pButton class="p-button-outlined w-full sm:w-auto flex-order-0 sm:flex-order-1" icon="pi pi-unlock" label="Cambiar Contraseña" *ngIf="isLoginUser && isEdit"></button>
+        </div>
+        <div class="grid margin-top">
+            <div class="col-12 lg:col-2">
+                <div class="text-900 font-medium text-xl mb-3">Usuario</div>
+                <p class="m-0 p-0 text-600 line-height-3 mr-3"></p>
+            </div>
+            <div class="col-12 lg:col-10">
+                <div class="grid formgrid p-fluid">
+                    <form class="grid" [formGroup]="usersForm" (ngSubmit)="onSubmit()">
+                        <div class="field mb-4 col-12">
+                            <label for="nickname" class="font-medium text-900">Nombres</label>
+                            <input id="nickname" type="text" formControlName="firstName" pInputText required maxlength="50">
+                        </div>
+                        <div class="field mb-4 col-12">
+                            <label for="nickname" class="font-medium text-900">Apellidos</label>
+                            <input id="nickname" type="text" formControlName="lastName" pInputText required maxlength="50">
+                        </div>
+                        <div class="field mb-4 col-12 md:col-6">
+                            <label for="email" class="font-medium text-900">Correo electrónico</label>
+                            <input id="email" type="email" formControlName="email" pInputText required />
+                        </div>
+                        <div class="field mb-4 col-12 md:col-6">
+                            <label for="cellPhone" class="font-medium text-900">Teléfono</label>
+                            <input id="cellPhone" type="number" formControlName="cellPhone" pInputText required (input)="limitLength($event)">
+                        </div>
+                        <div class="field mb-4 col-12 md:col-6">
+                            <label for="role" class="font-medium text-900">Roles</label>
+                            <p-multiSelect [options]="roles" optionLabel="name" placeholder="Seleccione un Rol" formControlName="roles" *ngIf="isLoginUser || (!this.permissions.includes('assign-role-to-use') && isEdit); else onRole" class="rolesdisabled">
+                                <ng-template let-rol pTemplate="item">
+                                    <div class="flex align-items-center">
+                                        <div>{{rol.name}}</div>
+                                    </div>
+                                </ng-template>
+                            </p-multiSelect>
+                            <ng-template #onRole>
+                                <p-multiSelect [options]="roles" optionLabel="name" placeholder="Seleccione un Rol" formControlName="roles">
+                                    <ng-template let-rol pTemplate="item">
+                                        <div class="flex align-items-center">
+                                            <div>{{rol.name}}</div>
+                                        </div>
+                                    </ng-template>
+                                </p-multiSelect>
+                            </ng-template>
+                        </div>
+                        <!-- <div class="field mb-4 col-12 md:col-6">
+                            <label for="city" class="font-medium text-900">Sucursal</label>
+                            <p-multiSelect [options]="sucursales" placeholder="Seleccione una Sucursal" formControlName="branch">
+                                <ng-template let-sucursal pTemplate="item">
+                                    <div class="flex align-items-center">
+                                        <div>{{sucursal}}</div>
+                                    </div>
+                                </ng-template>
+                            </p-multiSelect>
+                        </div> -->
+                        <div class="field mb-4 col-12 md:col-6" *ngIf="!isLoginUser">
+                            <label for="state" class="font-medium text-900">Estado</label>
+                            <p-dropdown inputId="estado" [options]="estados" [filter]="true" filterBy="name" [showClear]="true" placeholder="Seleccione un Estado" formControlName="status" >
+                                <ng-template let-estado pTemplate="item">
+                                    <div class="flex align-items-center">
+                                        <div>{{estado}}</div>
+                                    </div>
+                                </ng-template>
+                            </p-dropdown>
+                        </div>
+                        <div class="field mb-4 col-12 md:col-6" *ngIf="!isEdit && !isView">
+                            <label for="password" class="font-medium text-900">contraseña</label>
+                            <div class="input-group" style="display: flex;">
+                                <input id="password" [attr.type]="showPassword ? 'text' : 'password'" formControlName="password" pInputText style="flex: 1;">
+                                <button type="button" class="input-group-append" (click)="showPassword = !showPassword" style="border: none; background: none;">
+                                    <span class="input-group-text">
+                                        <i [ngClass]="showPassword ? 'pi pi-eye' : 'pi pi-eye-slash'"></i>
+                                    </span>
+                                </button>
+                            </div>
+                            <div *ngIf="usersForm.controls['password'].errors && usersForm.controls['password'].errors['minlength']">                            
+                                Min. 8 caracteres
+                            </div>
+                        </div>
+                    </form>
+                    <div class="col-12 container">
+                        <div class="margin-right">
+                            <button pButton pRipple icon="pi pi-arrow-circle-left" label="Volver" class="w-auto mt-3 " (click)="onBack()"></button>
+                        </div>
+                        <div *ngIf="(isView && this.permissions.includes('update-users')) || (isView && isAdmin())">
+                            <button pButton pRipple icon="pi pi-pencil" label="Editar" class="w-auto mt-3" (click)="onSubmit()"></button>
+                        </div>
+                        <div *ngIf="!isView">
+                            <button pButton pRipple icon="pi pi-save" label="Guardar" class="w-auto mt-3" (click)="onSubmit()"></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

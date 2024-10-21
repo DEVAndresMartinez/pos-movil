@@ -1,0 +1,61 @@
+<div class="flex justify-content-between layout-topbar">
+    <div class="flex align-items-center">
+        <a class="app-logo" style="cursor: pointer;" (click)="reload()">
+            <img style="width: 10rem;" src="../../assets/layout/images/LogoPos.png" alt="">
+        </a>
+        
+        <button *ngIf="showPosButton" #menubutton class="topbar-menubutton p-link" type="button" (click)="onMenuButtonClick()">
+            <span></span>
+        </button>
+    
+        <ul class="topbar-menu">
+            <li *ngFor="let item of tabs; let i = index">
+        </ul>
+    </div>
+    
+    <div class="flex session">
+        <div class="flex align-items-center justify-content-center">
+            <button *ngIf="isClient && (showPosButton === true)" pButton pRipple class="p-button-text" (click)="openPos()" pTooltip="Ir al POS" tooltipPosition="bottom">
+                <img src="../../assets/layout/images/cajero-automatico.png" alt="">
+            </button>
+            <button *ngIf="isClient && (showPosButton === false)" pButton pRipple class="p-button-text" (click)="hideDialog()" pTooltip="Ir a la pantalla Principal" tooltipPosition="bottom">
+                <img src="../../assets/layout/images/home.svg" alt="">
+            </button>
+        </div>
+    
+        <div class="flex">
+            <div class="topbar-profile">
+                <button class="topbar-profile-button p-link" type="button" pStyleClass="@next" enterClass="hidden" enterActiveClass="scalein" leaveToClass="hidden" leaveActiveClass="fadeout" [hideOnOutsideClick]="true">
+                    <img alt="avatar" src="https://www.kindpng.com/picc/m/78-786678_avatar-hd-png-download.png" style="border-radius: 50%;">
+                    <span class="profile-details">
+                        <span class="profile-name">{{loginUser()?.['firstName']}} {{loginUser()?.['lastName']}}</span>
+                        <span class="profile-job" *ngFor="let role of loginUser()?.roles">{{role.name}}</span>
+                    </span>
+                    <i class="pi pi-angle-down"></i>
+                </button>
+                <ul class="list-none p-3 m-0 border-round shadow-2 hidden absolute surface-overlay origin-top w-full sm:w-12rem mt-2 right-0 top-auto">
+                    <li>
+                        <a pRipple (click)="onProfile()" class="flex p-2 border-round align-items-center hover:surface-hover transition-colors transition-duration-150 cursor-pointer">
+                            <i class="pi pi-user mr-3"></i>
+                            <span >Perfil</span>
+                        </a>
+                        <a pRipple (click)="onLogout()" class="flex p-2 border-round align-items-center hover:surface-hover transition-colors transition-duration-150 cursor-pointer">
+                            <i class="pi pi-power-off mr-3"></i>
+                            <span>Cerrar Sesión</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <p-dialog [(visible)]="posDashDialog" header="Confirmar" [modal]="true" [style]="{ width: '450px' }">
+                <div class="flex align-items-center justify-content-center">
+                    <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem;"></i>
+                    <span>Esta seguro en volver a la Pantalla Principal? </span>
+                </div>
+                <ng-template pTemplate="footer">
+                    <button pButton pRipple icon="pi pi-times" class="p-button-text" label="Cancelar" (focus)="false" (click)="posDashDialog = false"></button>
+                    <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Confirmar" autofocus (click)="openHideDashboard()"></button>
+                </ng-template>
+            </p-dialog>
+        </div>
+    </div>
+</div>

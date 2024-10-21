@@ -1,0 +1,26 @@
+.permissions-container {
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.model-group {
+    margin-bottom: 20px;
+}
+
+.permissions-list {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.permission-item {
+    width: 50%;
+    padding: 5px 0;
+}
+
+/* Estilos para pantallas pequeñas */
+@media (max-width: 600px) {
+    .permission-item {
+        width: 100%;
+    }
+}

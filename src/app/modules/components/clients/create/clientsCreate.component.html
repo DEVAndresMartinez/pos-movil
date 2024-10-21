@@ -1,0 +1,426 @@
+<div *ngIf="loading">
+    Cargando...
+</div>
+<div *ngIf="!loading">
+    <div class="card">
+        <div class="flex flex-wrap gap-2 align-items-center justify-content-between">
+            <span class="text-900 text-xl font-bold mb-4 block">{{ isEdit ? 'Editar Cliente' : isView ? 'Ver Cliente' : 'Crear Comercio' }}</span>
+            <button (click)="navigateToEditClient()" pButton class="p-button-outlined w-full sm:w-auto flex-order-0 sm:flex-order-1" icon="pi pi-user-plus" label="Editar Cliente" *ngIf="isView"></button>
+        </div>
+        <div class="col-12 flex justify-content-center flex-wrap mx-0 my-0">
+            <div class="col-12 lg:col-10">
+                <div class="grid formgrid p-fluid">
+                    <div *ngIf="currentStep === 0 || isEdit" class="col-12 flex justify-content-center gap-4">
+                        <div class="flex gap-1">
+                            <p-fileUpload mode="basic" chooseLabel="RUT" chooseIcon="pi pi-upload" name="demo[]" maxFileSize="1000000" accept="application/pdf" (onSelect)="onFileSelect($event)" (onUpload)="onUpload($event)"/>
+                            <button pButton pRipple pInputText icon="pi pi-eye" label="Preview" *ngIf="selectedFile" (click)="previewFile()" class="w-auto p-button p-button-secondary"></button>
+                            <p-dialog [(visible)]="showPreviewDialog" header="Vista Previa del Archivo" [modal]="true" [style]="{ width: '1000px',  padding: '0px', margin: '0px' }" [closable]="true">
+                                <div class="flex flex-column align-items-center w-full">
+                                    <div *ngIf="filePreviewUrl" class="modal">
+                                        <iframe [src]="filePreviewUrl" width="900px" height="900px"></iframe>
+                                    </div>
+                                </div>
+                                <ng-template pTemplate="footer">
+                                    <button pButton pRipple icon="pi pi-times" class="p-button-text" label="Cerrar" (click)="closePreviewDialog()"></button>
+                                </ng-template>
+                            </p-dialog>
+                        </div>
+                        <div class="flex gap-1">
+                            <p-fileUpload mode="basic" chooseLabel="RESOLUCIÓN" chooseIcon="pi pi-upload" name="demo[]" maxFileSize="1000000" accept="application/pdf" (onSelect)="onFileSelect($event)" (onUpload)="onUpload($event)"/>
+                            <button pButton pRipple pInputText icon="pi pi-eye" label="Preview" *ngIf="selectedFile" (click)="previewFile()" class="w-auto p-button p-button-secondary"></button>
+                            <p-dialog [(visible)]="showPreviewDialog" header="Vista Previa del Archivo" [modal]="true" [style]="{ width: '1000px',  padding: '0px', margin: '0px' }" [closable]="true">
+                                <div class="flex flex-column align-items-center w-full">
+                                    <div *ngIf="filePreviewUrl" class="modal">
+                                        <iframe [src]="filePreviewUrl" width="900px" height="900px"></iframe>
+                                    </div>
+                                </div>
+                                <ng-template pTemplate="footer">
+                                    <button pButton pRipple icon="pi pi-times" class="p-button-text" label="Cerrar" (click)="closePreviewDialog()"></button>
+                                </ng-template>
+                            </p-dialog>
+                        </div>
+                    </div>
+                    <form [formGroup]="clientForm" (ngSubmit)="onSubmit()">
+                        <div *ngIf="currentStep >= 1 && personType === 'juridica' || isEdit" class="grid seccion-1">
+                            <div class="field my-5 col-12">
+                                <label for="title" style="width: 100%; text-align: center; font-size: 18px;" class="font-bold">Datos del Comercio  <button type="button" class="w-auto btn-todo" (click)="formToggle()">@if (currentStep === 4) {Ocultar} @else {Todo}</button> </label>
+                            </div>
+                            <div class="field mb-4 col-12 md:col-6">
+                                <label for="personType" class="font-medium text-900">Tipo de Contribuyente </label>
+                                <input id="personType" type="text" formControlName="personType" pInputText required class="btn-active">
+                            </div>
+                            <div class="field mb-4 col-12 md:col-5">
+                                <label for="nit" class="font-medium text-900">NIT <span style="font-size: 12px;">(sin digito de verificación) </span> <i class="pi pi-info-circle" style="font-size: 1rem" pTooltip="Número de Identificación de la empresa acorde a lo que indica el RUT" tooltipPosition="right"></i> </label>
+                                <input id="nit" type="text" formControlName="nit" (keyup)="calcular()" pInputText required placeholder="Digite el NIT" maxlength="10">
+                            </div>
+                            <div class="field mb-4 col-12 md:col-1">
+                                <label for="identificationDv" class="font-medium text-900">Dv</label>
+                                <input class="btn-active" id="identificationDv" formControlName="identificationDv" pInputText placeholder="0">
+                            </div>
+                            <div class="field mb-4 col-12 md:col-6">
+                                <label for="businessName" class="font-medium text-900">Razón social <i class="pi pi-info-circle" style="font-size: 1rem" pTooltip="Nombre de la empresa acorde a la razón social o lo que indica el RUT" tooltipPosition="right"></i> </label>
+                                <input id="businessName" type="text" formControlName="businessName" pInputText required placeholder="Digite el nombre del establecimiento" maxlength="250">
+                            </div>
+                            <div class="field col-12 md:col-6">
+                                <label for="departmentId" class="font-medium text-900">Departamento / Estado <i class="pi pi-info-circle" style="font-size: 1rem" pTooltip="Departamento donde se encuentra ubicada la empresa" tooltipPosition="right"></i> </label>
+                                <p-dropdown [options]="deptos" formControlName="departmentId" optionLabel="name" optionValue="id" [filter]="true" filterBy="name"
+                                    placeholder="Seleccione un Departamento / Estado" (onChange)="onDeptoChange($event)"></p-dropdown>
+                            </div>
+                            <div class="field col-12 md:col-6">
+                                <label for="cityId" class="font-medium text-900">Municipio / Ciudad <i class="pi pi-info-circle" style="font-size: 1rem" pTooltip="Municipio donde se encuentra ubicada la empresa" tooltipPosition="right"></i> </label>
+                                <p-dropdown [options]="cities" formControlName="cityId" optionLabel="name" optionValue="id" [filter]="true" filterBy="name"
+                                 placeholder="Seleccione un Municipio / Ciudad"></p-dropdown>
+                            </div>
+                            <div class="field mb-4 col-12 md:col-6">
+                                <label for="address" class="font-medium text-900">Dirección <i class="pi pi-info-circle" style="font-size: 1rem" pTooltip="Dirección donde se encuentra ubicada la empresa" tooltipPosition="right"></i> </label>
+                                <input id="address" type="text" formControlName="address" pInputText placeholder="Digite la dirección del establecimiento" maxlength="250">
+                            </div>
+                            <div class="field mb-4 col-12 md:col-6">
+                                <label for="email" class="font-medium text-900">Email</label>
+                                <input id="email" type="email" formControlName="email" pInputText required placeholder="Digite correo electrónico del establecimiento" maxlength="50">
+                            </div>
+                            <div class="field mb-4 col-12 md:col-6">
+                                <label for="cellPhoneBusiness" class="font-medium text-900">Teléfono</label>
+                                <input id="cellPhoneBusiness" type="text" formControlName="cellPhoneBusiness" pInputText required placeholder="Digite teléfono del establecimiento" [maxLength]="10" [minLength]="10">
+                            </div>
+                        </div>
+                        <div *ngIf="currentStep >= 2 &&  personType === 'juridica' || isEdit" class="grid seccion-2">
+                            <div class="field my-5 col-12">
+                                <label for="title" style="width: 100%; text-align: center; font-size: 18px;" class="font-bold">Datos del Representante Legal</label>
+                            </div>
+                            <div class="field mb-4 col-12 md:col-6">
+                                <label for="identificationType" class="font-medium text-900">Tipo de Identificación <i class="pi pi-info-circle" style="font-size: 1rem" pTooltip="Seleccione el tipo de identificación del representante legal." tooltipPosition="right"></i> </label>
+                                <p-dropdown [options]="identificationType" formControlName="identificationType" optionLabel="label" optionValue="value" placeholder="Seleccione el tipo de identificación"></p-dropdown>
+                            </div>
+                            <div class="field mb-4 col-12 md:col-6">
+                                <label for="identification" class="font-medium text-900">Numero de Identificación <i class="pi pi-info-circle" style="font-size: 1rem" pTooltip="Número de Identificación del representante legal." tooltipPosition="right"></i> </label>
+                                <input id="identification" type="text" formControlName="identification" (keyup)="calcular()" pInputText required placeholder="Digite el numero de identificación" maxlength="13">
+                            </div>
+                            <div class="field mb-4 col-12 md:col-6">
+                                <label for="firstname" class="font-medium text-900">Primer Nombre Representante Legal <i class="pi pi-info-circle" style="font-size: 1rem" pTooltip="Primer Nombre del Contribuyente acorde a lo que indica el RUT" tooltipPosition="right"></i> </label>
+                                <input id="firstname" type="text" formControlName="firstname" pInputText required placeholder="Digite el primer nombre del representante legal" maxlength="50">
+                            </div>
+                            <div class="field mb-4 col-12 md:col-6">
+                                <label for="secondname" class="font-medium text-900">Segundo Nombre Representante Legal <i class="pi pi-info-circle" style="font-size: 1rem" pTooltip="Segundo Nombre del Contribuyente acorde a lo que indica el RUT" tooltipPosition="right"></i> </label>
+                                <input id="secondname" type="text" formControlName="secondname" pInputText required placeholder="Digite el segundo nombre del representante legal" maxlength="50">
+                            </div>
+                            <div class="field mb-4 col-12 md:col-6">
+                                <label for="firstlastname" class="font-medium text-900">Primer Apellido Representante Legal <i class="pi pi-info-circle" style="font-size: 1rem" pTooltip="Primer Apellido del Contribuyente acorde a lo que indica el RUT" tooltipPosition="right"></i> </label>
+                                <input id="firstlastname" type="text" formControlName="firstlastname" pInputText required placeholder="Digite el primer apellido del representante legal" maxlength="50">
+                            </div>
+                            <div class="field mb-4 col-12 md:col-6">
+                                <label for="secondlastname" class="font-medium text-900">Segundo Apellido Representante Legal <i class="pi pi-info-circle" style="font-size: 1rem" pTooltip="Segundo Apellido del Contribuyente acorde a lo que indica el RUT" tooltipPosition="right"></i> </label>
+                                <input id="secondlastname" type="text" formControlName="secondlastname" pInputText required placeholder="Digite el segundo apellido del representante legal" maxlength="50">
+                            </div>
+                            <div class="field mb-4 col-12 md:col-6">
+                                <label for="resolution" class="font-medium text-900">Cuenta con Resolución? <i class="pi pi-info-circle" style="font-size: 1rem" pTooltip="Si es no, el cliente no puede facturar, si es si continuara para llenar esa sección" tooltipPosition="right"></i> </label>
+                                <p-dropdown [options]="resolucion" formControlName="resolution" optionLabel="label" optionValue="value" placeholder="Seleccione el tipo de identificación"></p-dropdown>
+                            </div>
+                        </div>
+                        <div *ngIf="currentStep >= 2 && personType === 'natural'" class="grid seccion-1">
+                            <div class="field my-5 col-12">
+                                <label for="title" style="width: 100%; text-align: center; font-size: 18px;" class="font-bold">Datos Generales  <button type="button" class="w-auto btn-todo" (click)="formToggle()">@if (currentStep === 4) {Ocultar} @else {Todo}</button> </label>
+                            </div>
+                            <div class="field mb-4 col-12 md:col-6">
+                                <label for="personType" class="font-medium text-900">Tipo de Contribuyente </label>
+                                <input id="personType" type="text" formControlName="personType" pInputText required class="btn-active">
+                            </div>
+                            <div class="field mb-4 col-12 md:col-5">
+                                <label for="nit" class="font-medium text-900">NIT <span style="font-size: 12px;">(sin digito de verificación)</span> <i class="pi pi-info-circle" style="font-size: 1rem" pTooltip="Número de Identificación de la empresa acorde a lo que indica el RUT" tooltipPosition="right"></i> </label>
+                                <input id="nit" type="text" formControlName="nit" (keyup)="calcular()" pInputText required placeholder="Digite el NIT" maxlength="10">
+                            </div>
+                            <div class="field mb-4 col-12 md:col-1">
+                                <label for="identificationDv" class="font-medium text-900">Dv</label>
+                                <input class="btn-active" id="identificationDv" formControlName="identificationDv" pInputText placeholder="0">
+                            </div>
+                            <div class="field mb-4 col-12 md:col-6">
+                                <label for="identificationType" class="font-medium text-900">Tipo de Identificación <i class="pi pi-info-circle" style="font-size: 1rem" pTooltip="Seleccione el tipo de identificación del representante legal." tooltipPosition="right"></i> </label>
+                                <p-dropdown [options]="identificationType" formControlName="identificationType" optionLabel="label" optionValue="value" placeholder="Seleccione el tipo de identificación"></p-dropdown>
+                            </div>
+                            <div class="field mb-4 col-12 md:col-6">
+                                <label for="identification" class="font-medium text-900">Numero de Identificación <i class="pi pi-info-circle" style="font-size: 1rem" pTooltip="Número de Identificación del representante legal." tooltipPosition="right"></i> </label>
+                                <input id="identification" type="text" formControlName="identification" (keyup)="calcular()" pInputText required placeholder="Digite el numero de identificación" maxlength="13">
+                            </div>
+                            <div class="field mb-4 col-12 md:col-6">
+                                <label for="firstname" class="font-medium text-900">Primer Nombre Representante Legal <i class="pi pi-info-circle" style="font-size: 1rem" pTooltip="Primer Nombre del Contribuyente acorde a lo que indica el RUT" tooltipPosition="right"></i> </label>
+                                <input id="firstname" type="text" formControlName="firstname" pInputText required placeholder="Digite el primer nombre del representante legal" maxlength="50">
+                            </div>
+                            <div class="field mb-4 col-12 md:col-6">
+                                <label for="secondname" class="font-medium text-900">Segundo Nombre Representante Legal <i class="pi pi-info-circle" style="font-size: 1rem" pTooltip="Segundo Nombre del Contribuyente acorde a lo que indica el RUT" tooltipPosition="right"></i> </label>
+                                <input id="secondname" type="text" formControlName="secondname" pInputText required placeholder="Digite el segundo nombre del representante legal" maxlength="50">
+                            </div>
+                            <div class="field mb-4 col-12 md:col-6">
+                                <label for="firstlastname" class="font-medium text-900">Primer Apellido Representante Legal <i class="pi pi-info-circle" style="font-size: 1rem" pTooltip="Primer Apellido del Contribuyente acorde a lo que indica el RUT" tooltipPosition="right"></i> </label>
+                                <input id="firstlastname" type="text" formControlName="firstlastname" pInputText required placeholder="Digite el primer apellido del representante legal" maxlength="50">
+                            </div>
+                            <div class="field mb-4 col-12 md:col-6">
+                                <label for="secondlastname" class="font-medium text-900">Segundo Apellido Representante Legal <i class="pi pi-info-circle" style="font-size: 1rem" pTooltip="Segundo Apellido del Contribuyente acorde a lo que indica el RUT" tooltipPosition="right"></i> </label>
+                                <input id="secondlastname" type="text" formControlName="secondlastname" pInputText required placeholder="Digite el segundo apellido del representante legal" maxlength="50">
+                            </div>
+                            <div class="field col-12 md:col-6">
+                                <label for="departmentId" class="font-medium text-900">Departamento / Estado <i class="pi pi-info-circle" style="font-size: 1rem" pTooltip="Departamento donde se encuentra ubicada la empresa" tooltipPosition="right"></i> </label>
+                                <p-dropdown [options]="deptos" formControlName="departmentId" optionLabel="name" optionValue="id" [filter]="true" filterBy="name"
+                                placeholder="Seleccione un Departamento / Estado" (onChange)="onDeptoChange($event)"></p-dropdown>
+                            </div>
+                            <div class="field col-12 md:col-6">
+                                <label for="cityId" class="font-medium text-900">Municipio / Ciudad <i class="pi pi-info-circle" style="font-size: 1rem" pTooltip="Municipio donde se encuentra ubicada la empresa" tooltipPosition="right"></i> </label>
+                                <p-dropdown [options]="cities" formControlName="cityId" optionLabel="name" optionValue="id" [filter]="true" filterBy="name"
+                                placeholder="Seleccione un Municipio / Ciudad"></p-dropdown>
+                            </div>
+                            <div class="field mb-4 col-12 md:col-6">
+                                <label for="address" class="font-medium text-900">Dirección <i class="pi pi-info-circle" style="font-size: 1rem" pTooltip="Dirección donde se encuentra ubicada la empresa" tooltipPosition="right"></i> </label>
+                                <input id="address" type="text" formControlName="address" pInputText placeholder="Digite la dirección del establecimiento" maxlength="250">
+                            </div>
+                            <div class="field mb-4 col-12 md:col-6">
+                                <label for="email" class="font-medium text-900">Email</label>
+                                <input id="email" type="email" formControlName="email" pInputText required placeholder="Digite correo electrónico del establecimiento" maxlength="50">
+                            </div>
+                            <div class="field mb-4 col-12 md:col-6">
+                                <label for="cellPhoneBusiness" class="font-medium text-900">Teléfono</label>
+                                <input id="cellPhoneBusiness" type="text" formControlName="cellPhoneBusiness" pInputText required placeholder="Digite teléfono del establecimiento" [maxLength]="10" [minLength]="10">
+                            </div>
+                            <div class="field mb-4 col-12 md:col-6">
+                                <label for="resolution" class="font-medium text-900">Cuenta con Resolución? <i class="pi pi-info-circle" style="font-size: 1rem" pTooltip="Si es no, el cliente no puede facturar, si es si continuara para llenar esa sección" tooltipPosition="right"></i> </label>
+                                <p-dropdown [options]="resolucion" formControlName="resolution" optionLabel="label" optionValue="value" placeholder="Seleccione el tipo de identificación"></p-dropdown>
+                            </div>
+                        </div>
+                        <div *ngIf="currentStep >= 3 || isEdit" class="grid seccion-3">
+                            <div class="field my-5 col-12">
+                                <label for="title" style="width: 100%; text-align: center; font-size: 18px;" class="font-bold">Datos de la resolución</label>
+                            </div>
+                            <div class="field mb-4 col-12 md:col-6">
+                                <label for="prefix" class="font-medium text-900">Prefijo <i class="pi pi-info-circle" style="font-size: 1rem" pTooltip="Longitud 7 caracteres, se pueden crear prefijos con 3 o menos letras, números o una combinación de números, no se pueden utilizar caracteres especiales como puntos, comas, etc." tooltipPosition="right"></i> </label>
+                                <input id="prefix" type="text" formControlName="prefix" pInputText required placeholder="Digite el prefijo de identificación" maxlength="7">
+                            </div>
+                            <div class="field mb-4 col-12 md:col-6">
+                                <label for="facturationType" class="font-medium text-900">Tipo de facturación <i class="pi pi-info-circle" style="font-size: 1rem" pTooltip="Listado de tipos de facturas para Practi siempre se va a manejar. FACTURA ELECTRÓNICA DE VENTA" tooltipPosition="right"></i> </label>
+                                <p-dropdown [options]="facturationType" formControlName="facturationType" optionLabel="label" optionValue="value" placeholder="Seleccione el tipo de identificación"></p-dropdown>
+                            </div>
+                            <div class="field mb-4 col-12 md:col-6">
+                                <label for="datefrom" class="font-medium text-900">Fecha Desde <i class="pi pi-info-circle" style="font-size: 1rem" pTooltip="Fecha que inicia y/o aprobación para usar la facturación por parte de la DIAN" tooltipPosition="right"></i></label>
+                                <span class="block mt-2 md:mt-0 p-input-icon-left">
+                                    <p-calendar [iconDisplay]="'input'" formControlName="datefrom" [showIcon]="true" dateFormat="dd/mm/yy" placeholder="DD/MM/YYYY"></p-calendar>
+                                </span>
+                            </div>
+                            <div class="field mb-4 col-12 md:col-6">
+                                <label for="datetodate" class="font-medium text-900">Fecha Hasta <i class="pi pi-info-circle" style="font-size: 1rem" pTooltip="Fecha fin o vigencia de la numeración de la facturación  por parte de la DIAN" tooltipPosition="right"></i> </label>
+                                <span class="block mt-2 md:mt-0 p-input-icon-left">
+                                    <p-calendar [iconDisplay]="'input'" formControlName="datetodate" [showIcon]="true" dateFormat="dd/mm/yy" placeholder="DD/MM/YYYY"></p-calendar>
+                                </span>
+                            </div>
+                            <div class="field mb-4 col-12 md:col-6">
+                                <label for="rangefrom" class="font-medium text-900">Rango Desde <i class="pi pi-info-circle" style="font-size: 1rem" pTooltip="Númerico apartir 1 digito hasta 15 Posiciones" tooltipPosition="right"></i> </label>
+                                <input id="rangefrom" type="number" formControlName="rangefrom" pInputText required placeholder="Digite el valor inicial" min="1" max="15">
+                            </div>
+                            <div class="field mb-4 col-12 md:col-6">
+                                <label for="rangeupto" class="font-medium text-900">Rango Hasta <i class="pi pi-info-circle" style="font-size: 1rem" pTooltip="Númerico  15 Posiciones" tooltipPosition="right"></i> </label>
+                                <input id="rangeupto" type="number" formControlName="rangeupto" pInputText required placeholder="Digite el valor Final" max="15">
+                            </div>
+                            <div class="field mb-4 col-12 md:col-6">
+                                <label for="authorizationdate" class="font-medium text-900">Fecha Autorización N° Facturación <i class="pi pi-info-circle" style="font-size: 1rem" pTooltip="Fecha en que fue aprobada la Resolución por Parte de la DIAN.Ver  documento en .PDF" tooltipPosition="right"></i> </label>
+                                <span class="block mt-2 md:mt-0 p-input-icon-left">
+                                    <p-calendar [iconDisplay]="'input'" formControlName="authorizationdate" [showIcon]="true" dateFormat="dd/mm/yy" placeholder="DD/MM/YYYY"></p-calendar>
+                                </span>
+                            </div>
+                            <div class="field mb-4 col-12 md:col-6">
+                                <label for="numberresolution" class="font-medium text-900">N° Resolución <i class="pi pi-info-circle" style="font-size: 1rem" pTooltip="N° de Resolución asignada po la  DIAN. Ver  documento en .PDF" tooltipPosition="right"></i> </label>
+                                <input id="numberresolution" type="number" formControlName="numberresolution" pInputText required placeholder="Digite el primer apellido del representante legal">
+                            </div>
+                        </div>
+                        <div *ngIf="currentStep >= 4 || isEdit" class="grid seccion-5">
+                            <div class="field my-5 col-12">
+                                <label for="title" style="width: 100%; text-align: center; font-size: 18px;" class="font-bold">Llaves de Configuración</label>
+                            </div>
+                            <div class="field mb-4 col-12 md:col-6">
+                                <label for="conexusGuidCompany" class="font-medium text-900">Guid Empresa <i class="pi pi-info-circle" style="font-size: 1rem" pTooltip="Permite diligenciar y Guardar las llaves.Estos datos son entregados por CONEXUS" tooltipPosition="right"></i> </label>
+                                <input id="conexusGuidCompany" type="text" formControlName="conexusGuidCompany" pInputText required placeholder="Digite el Guid de Empresa">
+                            </div>
+                            <div class="field mb-4 col-12 md:col-6">
+                                <label for="conexusGuidOrigin" class="font-medium text-900">Guid Origen <i class="pi pi-info-circle" style="font-size: 1rem" pTooltip="Permite diligenciar y Guardar las llaves.Estos datos son entregados por CONEXUS" tooltipPosition="right"></i> </label>
+                                <input id="conexusGuidOrigin" type="text" formControlName="conexusGuidOrigin" pInputText required placeholder="Digite el Guid de Origen">
+                            </div>
+                            <div class="field mb-4 col-12 md:col-6">
+                                <label for="conexusSecurityHash" class="font-medium text-900">Hash Seguridad <i class="pi pi-info-circle" style="font-size: 1rem" pTooltip="Permite diligenciar y Guardar las llaves.Estos datos son entregados por CONEXUS" tooltipPosition="right"></i> </label>
+                                <input id="conexusSecurityHash" type="text" formControlName="conexusSecurityHash" pInputText required placeholder="Digite el Hash de Seguridad">
+                            </div>
+                        </div>
+                    </form>
+                    <div *ngIf="currentStep === 0" class="col-12 flex justify-content-center gap-4">
+                        <button pButton pRipple pInputText icon="pi pi-users" label="PERSONA NATURAL" class="p-button-outlined w-auto mt-3" (click)="selectPersonTpe('natural')"></button>
+                        <button pButton pRipple pInputText icon="pi pi-building" label="PERSONA JURIDICA" class="p-button-outlined w-auto mt-3" (click)="selectPersonTpe('juridica')"></button>
+                    </div>
+                    <div class="col-12 flex justify-content-center gap-4 mt-4">
+                        <button pButton pRipple icon="pi pi-times" label="Cancelar" class="w-auto mt-3" (click)="onBack()"></button>
+                        <button *ngIf="currentStep > 0" pButton pRipple icon="pi pi-arrow-left" label="Anterior" class="w-auto mt-3" (click)="prevStep()"></button>
+                        <button [ngClass]="{'btn-active': currentStep === 6 }" *ngIf="currentStep > 0 && !isView" pButton pRipple icon="pi pi-arrow-right" label="Siguiente" class=" w-auto mt-3" (click)="nextStep()"></button>
+                        <button *ngIf="currentStep > 0 && !isView" pButton pRipple icon="pi pi-save" label="Guardar" class="w-auto mt-3" (click)="onSubmit()"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    <div class="card" *ngIf="isView">
+        <p-table #dt [value]="users" [paginator]="true" [rows]="10" [showCurrentPageReport]="true" responsiveLayout="scroll"
+            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" [rowsPerPageOptions]="[10,25,50]"
+            [globalFilterFields]="['firstName', 'lastName', 'roleString', 'status', 'email', 'cellPhone', 'branch']">
+            <ng-template pTemplate="caption">
+                <div class="flex flex-wrap gap-2 align-items-center justify-content-between">
+                    <span class="p-input-icon-left w-full sm:w-20rem flex-order-1 sm:flex-order-0">
+                        <i class="pi pi-search"></i>
+                        <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Buscar" class="w-full globalFilter" />
+                    </span>
+                </div>
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr>
+                    <th pSortableColumn="firstName" class="white-space-nowrap" style="width:15%">Nombre <p-sortIcon field="firstName"></p-sortIcon></th>
+                    <th pSortableColumn="lastName" class="white-space-nowrap" style="width:15%">Apellido <p-sortIcon field="lastName"></p-sortIcon></th>
+                    <th pSortableColumn="status" class="white-space-nowrap" style="width:15%">Estado <p-sortIcon field="status"></p-sortIcon></th>
+                    <th pSortableColumn="email" class="white-space-nowrap" style="width:15%">Email <p-sortIcon field="email"></p-sortIcon></th>
+                    <th pSortableColumn="cellPhone" class="white-space-nowrap" style="width:15%">Telefono <p-sortIcon field="cellPhone"></p-sortIcon></th>
+                    <th style="width:10%"></th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-user>
+                <tr>
+                    <td>{{user.firstName}}</td>
+                    <td>{{user.lastName}}</td>
+                    <td>{{user.status}}</td>
+                    <td>{{user.email}}</td>
+                    <td>
+                        <div class="inline-flex align-items-center">
+                            <span>{{user.cellPhone}}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <p-menu #menu [model]="user.items"></p-menu>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</div>
+
+
+
+<!-- <div *ngIf="loading">
+    Cargando...
+</div>
+<div *ngIf="!loading">
+    <div class="card">
+        <div class="flex flex-wrap gap-2 align-items-center justify-content-between">
+            <span class="text-900 text-xl font-bold mb-4 block">{{ isEdit ? 'Editar Cliente' : isView ? 'Ver Cliente' : 'Crear Cliente' }}</span>
+            <button (click)="navigateToEditClient()" pButton class="p-button-outlined w-full sm:w-auto flex-order-0 sm:flex-order-1" icon="pi pi-user-plus" label="Editar Cliente" *ngIf="isView"></button>
+        </div>
+        <div class="grid margin-top">
+            <div class="col-12 lg:col-2">
+                <div class="text-900 font-medium text-xl mb-3">Cliente:</div>
+                <p class="m-0 p-0 text-600 line-height-3 mr-3"></p>
+            </div>
+            <div class="col-12 lg:col-10">
+                <div class="grid formgrid p-fluid">
+                    <form class="grid" [formGroup]="clientForm" (ngSubmit)="onSubmit()">
+
+                        <div class="field mb-4 col-12">
+                            <label for="nickname" class="font-medium text-900">Razón social</label>
+                            <input id="nickname" type="text" formControlName="businessName" pInputText required>
+                        </div>
+                        <div class="field mb-4 col-6">
+                            <label for="nickname" class="font-medium text-900">NIT</label>
+                            <input id="nickname" type="text" formControlName="nit" pInputText required>
+                        </div>
+                        <div class="field mb-4 col-6">
+                            <label for="nickname" class="font-medium text-900">Representante</label>
+                            <input id="nickname" type="text" formControlName="userName" pInputText required>
+                        </div>
+                        <div class="field col-6">
+                            <label for="departmentId">Departamento / Estado</label>
+                            <p-dropdown [options]="deptos" optionLabel="name" optionValue="id" [filter]="true"
+                                filterBy="name"
+                                placeholder="Seleccione un Departamento / Estado" (onChange)="onDeptoChange($event)"></p-dropdown>
+                        </div>
+                        <div class="field col-6">
+                            <label for="departmentId">Departamento / Estado</label>
+                            <p-dropdown [options]="cities" optionLabel="name" optionValue="id" [filter]="true"
+                                filterBy="name" formControlName="cityId"
+                                placeholder="Seleccione un Municipio / Ciudad"></p-dropdown>
+                        </div>
+                        <div class="field mb-4 col-12 md_col-6">
+                            <label for="address" class="font-medium text-900">Dirección</label>
+                            <input id="address" type="text" formControlName="address" pInputText>
+                        </div>
+                        <div class="field mb-4 col-12 md:col-6">
+                            <label for="email" class="font-medium text-900">Email</label>
+                            <input id="email" type="email" formControlName="email" pInputText required>
+                        </div>
+                        <div class="field mb-4 col-12 md:col-6">
+                            <label for="cellPhone" class="font-medium text-900">Teléfono</label>
+                            <input id="cellPhone" type="text" formControlName="cellPhone" pInputText required>
+                        </div>
+                        <div class="field mb-4 col-12 md:col-6">
+                            <label for="state" class="font-medium text-900">Estado</label>
+                            <p-dropdown inputId="estado" [options]="estados" [filter]="true" filterBy="name" [showClear]="true" placeholder="Seleccione un Estado" formControlName="status" >
+                                <ng-template let-estado pTemplate="item">
+                                    <div class="flex align-items-center">
+                                        <div>{{estado}}</div>
+                                    </div>
+                                </ng-template>
+                            </p-dropdown>
+                        </div>
+                    </form>
+                        <div class="col-12 container">
+                            <div class="margin-right">
+                                <button pButton pRipple icon="pi pi-arrow-circle-left" label="Volver" class="w-auto mt-3 " (click)="onBack()"></button>
+                            </div>
+                            <div *ngIf="!isView">
+                                <button pButton pRipple icon="pi pi-save" label="Guardar" class="w-auto mt-3" (click)="onSubmit()"></button>
+                            </div>
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card" *ngIf="isView">
+        <p-table #dt [value]="users" [paginator]="true" [rows]="10" [showCurrentPageReport]="true" responsiveLayout="scroll"
+            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" [rowsPerPageOptions]="[10,25,50]"
+            [globalFilterFields]="['firstName', 'lastName', 'roleString', 'status', 'email', 'cellPhone', 'branch']">
+            <ng-template pTemplate="caption">
+                <div class="flex flex-wrap gap-2 align-items-center justify-content-between">
+                    <span class="p-input-icon-left w-full sm:w-20rem flex-order-1 sm:flex-order-0">
+                        <i class="pi pi-search"></i>
+                        <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Buscar" class="w-full globalFilter" />
+                    </span>
+                </div>
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr>
+                    <th pSortableColumn="firstName" class="white-space-nowrap" style="width:15%">Nombre <p-sortIcon field="firstName"></p-sortIcon></th>
+                    <th pSortableColumn="lastName" class="white-space-nowrap" style="width:15%">Apellido <p-sortIcon field="lastName"></p-sortIcon></th>
+                    <th pSortableColumn="status" class="white-space-nowrap" style="width:15%">Estado <p-sortIcon field="status"></p-sortIcon></th>
+                    <th pSortableColumn="email" class="white-space-nowrap" style="width:15%">Email <p-sortIcon field="email"></p-sortIcon></th>
+                    <th pSortableColumn="cellPhone" class="white-space-nowrap" style="width:15%">Telefono <p-sortIcon field="cellPhone"></p-sortIcon></th>
+                    <th style="width:10%"></th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-user>
+                <tr>
+                    <td>{{user.firstName}}</td>
+                    <td>{{user.lastName}}</td>
+                    <td>{{user.status}}</td>
+                    <td>{{user.email}}</td>
+                    <td>
+                        <div class="inline-flex align-items-center">
+                            <span>{{user.cellPhone}}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <p-menu #menu [model]="user.items"></p-menu>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</div> -->

@@ -1,3 +1,5 @@
-<ion-app>
-  <ion-router-outlet></ion-router-outlet>
-</ion-app>
+<h1 *ngIf="!finishedAuthCheck()"></h1>
+
+<app-spinner></app-spinner>
+
+<router-outlet *ngIf="finishedAuthCheck()" />

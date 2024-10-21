@@ -1,0 +1,77 @@
+
+.card-dashboard {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 2px;
+    justify-content: space-between;
+}
+
+.card-pos {
+    width: 24%;
+    border-radius: 10px;
+    box-shadow: 5px 5px 5px #d9d9d9;
+    background-color: #22c55e;
+    transition: all .2s ease-in-out;
+    color: #FFFFFF;
+}
+
+.card-pos:hover {
+    background-color: #0ab348;
+    color: #FFFFFF;
+    transform: scale(1.03);
+    cursor: pointer;
+}
+
+.card-cash {
+    width: 24%;
+    border-radius: 10px;
+    box-shadow: 5px 5px 5px #d9d9d9;
+    background-color: #F9C404;
+    transition: all .2s ease-in-out;
+    color: #000000;
+}
+
+.card-cash:hover {
+    background-color: #f9b005;
+    color: #000000;
+    transform: scale(1.03);
+    cursor: pointer;
+}
+
+.card-sales {
+    width: 24%;
+    border-radius: 10px;
+    box-shadow: 5px 5px 5px #d9d9d9;
+    background-color: #f40000;
+    transition: all .2s ease-in-out;
+    color: #FFFFFF;
+}
+
+.card-sales:hover {
+    background-color: #d41919;
+    color: #FFFFFF;
+    transform: scale(1.03);
+    cursor: pointer;
+}
+
+.card-inventory {
+    width: 24%;
+    border-radius: 10px;
+    box-shadow: 5px 5px 5px #d9d9d9;
+    background-color: #FFFFFF;
+    transition: all .2s ease-in-out;
+    color: #000000;
+}
+
+.card-inventory:hover {
+    background-color: #d9d9d9;
+    color: #000000;
+    transform: scale(1.03);
+    cursor: pointer;
+}
+
+.card-graph {
+    width: 48%;
+    align-content: center;
+}

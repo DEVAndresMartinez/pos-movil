@@ -1,0 +1,118 @@
+<div *ngIf="loading">
+    Cargando....
+</div>
+<div *ngIf="!loading">
+    <div class="card">
+        <p-table #dt [value]="userActions" [columns]="cols" responsiveLayout="scroll" [rows]="10" [paginator]="true"
+        [rowsPerPageOptions]="rowsPerPageOptions" [showCurrentPageReport]="true" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" [rowHover]="true" dataKey="id">
+            <ng-template pTemplate="caption">
+                <div class="flex flex-wrap gap-2 align-items-center justify-content-between">
+                    <h5 class="m-0 m-4">Listado de Acciones</h5>
+                    <button (click)="openActionDialog()" pButton class="p-button-outlined w-full sm:w-auto flex-order-0 sm:flex-order-1" icon="pi pi-key" label="Crear Acciones"></button>
+                </div>
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr>
+                    <th class="td-table">No.</th>
+                    <th class="td-table">Acción</th>
+                    <th class="td-table">Permisos</th>
+                    <th class="td-table">Acciones</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-action let-i="rowIndex">
+                <tr>
+                    <td class="td-table">
+                        <span class="p-column-title">No.</span>
+                        {{ i + 1 }}
+                    </td>
+                    <td class="td-table" style="text-align: center;">
+                        <span class="p-column-title">Acción</span>
+                        {{ action.name }}
+                    </td>
+                    <td class="td-table">
+                        <span class="p-column-title">Permisos</span>
+                        {{ getPermissionsName(action.permissions) }} 
+                    </td>
+                    <td class="td-table" style="text-align: center;">
+                        <span class="p-column-title">Acciones</span>
+                        <button pButton pRipple icon="pi pi-pencil" class="w-2rem h-2rem p-button-rounded p-button-success mr-2" pTooltip="Editar acción" tooltipPosition="bottom" (click)="editActionPermissions(action)"></button>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+        
+        <p-dialog [(visible)]="actionDialog" header="Nueva acción" [modal]="true" [style]="{ width: '50vw' }">
+            <div class="flex flex-column align-items-center">
+                <form [formGroup]="actionForm" class="col-12 flex flex-wrap justify-content-center">
+                    <div class="field flex flex-column col-9">
+                        <label for="nameAction" class="font-medium text-900">Nombre Acción 
+                        <i class="pi pi-info-circle" pTooltip="Ej: Gestión de Usuarios" tooltipPosition="right"></i>
+                        </label>
+                        <input type="text" id="nameAction" pInputText formControlName="name" placeholder="Nombre de la acción" required>
+                    </div>
+                    <div class="field flex flex-column col-9">
+                        <label for="model" class="font-medium text-900">Modelo 
+                        <i class="pi pi-info-circle" pTooltip="Ej: user-management" tooltipPosition="right"></i>
+                        </label>
+                        <input type="text" id="model" pInputText formControlName="model" placeholder="Modelo de la acción" required>
+                    </div>
+                </form>                      
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="Cancelar" (click)="closeActionDialog()"></button>
+                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Crear Accion" (click)="confirmActionDialog()"></button>
+            </ng-template>
+        </p-dialog>
+        
+        <p-dialog [(visible)]="confirmDialog" header="Crear acción" [modal]="true" [style]="{ width: '540px'}">
+            <div class="flex align-content-center justify-content-center">
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem;"></i>
+                <span>¿Está seguro de crear el grupo de acciones {{ actionForm.get('name')?.value }}?</span>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="Cancelar" (click)="confirmDialog = false"></button>
+                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Confirmar" (click)="newAction()"></button>
+            </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="actionPermissionDialog" header="Asignar Permisos" [modal]="true" [style]="{ width: '50vw' }">
+            <div class="flex flex-column align-items-center"> 
+                <form [formGroup]="actionPermissionForm">
+                    <div formArrayName="permissionIds">
+                        <div class="permissions-container">
+                            <div *ngFor="let model of permissionsByModel | keyvalue" class="model-group">
+                                <br>
+                                <div class="permissions-list">
+                                    <div *ngFor="let permission of model.value" class="permission-item">
+                                        <label>
+                                            <input 
+                                                type="checkbox" 
+                                                [checked]="isPermissionChecked(permission.id)"
+                                                (change)="onChangeCheckbox(permission.id, $event)" />
+                                            {{ permission.name }}
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="Cancelar" (click)="actionPermissionDialog = false"></button>
+                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Asignar Permisos" (click)="confirmDialogAddActions = true"></button>
+            </ng-template>
+        </p-dialog>
+            
+            <p-dialog [(visible)]="confirmDialogAddActions" header="Asignar Permisos a la Nueva Acción" [modal]="true" [style]="{ width: '540px'}">
+                <div class="fled align-content-center justify-content-center">
+                    <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem;"></i>
+                    <span>Esta seguro de agregar los permisos a {{ actionCreatedName }} </span>
+                </div>
+                <ng-template pTemplate="footer">
+                    <button pButton pRipple icon="pi pi-times" class="p-button-text" label="Cancelar" (click)="confirmDialogAddActions = false"></button>
+                    <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Confirmar" (click)="confirmSave()"></button>
+                </ng-template>
+            </p-dialog>
+    </div>
+</div>

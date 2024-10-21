@@ -1,0 +1,166 @@
+<div *ngIf="loading" class="loading-container">
+    Cargando...
+</div>
+
+<div *ngIf="!loading">
+    <div class="grid">
+        <div class="col-12">
+            <div class="card">
+                <p-toast></p-toast>
+                <p-toolbar styleClass="mb-4" *ngIf="((this.permissions.includes('create-stocktaking') || this.permissions.includes('delete-stocktaking')) || this.isAdmin())">
+                    <ng-template pTemplate="left">
+                        <div class="my-2">
+                            <button pButton pRipple label="Nuevo" icon="pi pi-plus" class="p-button-success mr-2" (click)="createProduct()" *ngIf="(this.permissions.includes('create-stocktaking') || this.isAdmin())"></button>
+                            <button pButton pRipple label="Eliminar" icon="pi pi-trash" class="p-button-danger" (click)="deleteSelectedProduct()" [disabled]="!selectedProduct || !selectedProduct.length" *ngIf="(this.permissions.includes('delete-stocktaking') || this.isAdmin())"></button>
+                        </div>
+                    </ng-template>
+                </p-toolbar>
+
+                
+                <p-table #dt [value]="products"  [columns]="cols" responsiveLayout="scroll" [rows]="10" 
+                [globalFilterFields]="['ingredient.name', 'ingredient.description', 'ingredient.sku', 'ingredient.unit.abbreviation', 'actualQuantity', 'minQuantity', 'price', 'ingredient.ean']" 
+                [paginator]="true" [rowsPerPageOptions]="[10, 20, 30]" [showCurrentPageReport]="true" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" 
+                    [(selection)]="selectedProduct" selectionMode="multiple" [rowHover]="true" dataKey="id" [selectionPageOnly]="true"
+                    [sortMode]="'single'" [sortField]="'ingredient.name'" [sortOrder]="1"> 
+                    <ng-template pTemplate="caption">
+                        <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                            <h5 class="m-0 mb-4">Inventario de Productos</h5>
+                            <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center md:gap-2">
+                                <span class="block mt-2 md:mt-0 p-input-icon-left">
+                                    <i class="pi pi-search"></i>
+                                    <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" (input)="onEanFilter(dt, $event)" placeholder="Buscar..."  class="w-full sm:w-auto"/>
+                                </span>
+                            </div>
+                        </div>
+                    </ng-template>
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th *ngIf="(this.permissions.includes('delete-stocktaking') || this.isAdmin())">
+                                <p-tableHeaderCheckbox pTooltip="Selecciona los productos de esta página" tooltipPosition="bottom"></p-tableHeaderCheckbox>
+                            </th>
+                            <th pSortableColumn="ingredient.name">Nombre <p-sortIcon field="ingredient.name"></p-sortIcon></th>
+                            <th pSortableColumn="ingredient.description">Descripción <p-sortIcon field="ingredient.description"></p-sortIcon></th>
+                            <th style="text-align: center;" pSortableColumn="ingredient.sku">Código <p-sortIcon field="ingredient.sku"></p-sortIcon></th>
+                            <th style="text-align: center;" pSortableColumn="ingredient.unit.abbreviation">Unidad <p-sortIcon field="ingredient.unit.abbreviation"></p-sortIcon></th>
+                            <th style="text-align: center;" pSortableColumn="actualQuantity">Cantidad Actual<p-sortIcon field="actualQuantity"></p-sortIcon></th>
+                            <th style="text-align: center;" pSortableColumn="minQuantity">Cantidad Mínima <p-sortIcon field="minQuantity"></p-sortIcon></th>
+                            <th style="text-align: center;" pSortableColumn="price">Precio Venta <p-sortIcon field="price"></p-sortIcon></th>
+                            <th style="text-align: center;"> Acciones</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-product>
+                        <tr>
+                            <td class="td-table" *ngIf="(this.permissions.includes('delete-stocktaking') || this.isAdmin())">
+                                <p-tableCheckbox [value]="product"></p-tableCheckbox>
+                            </td>
+                            <td class="td-table">
+                                <span class="p-column-title">Nombre</span>
+                                {{ product.ingredient.name }}
+                            </td>
+                            <td class="td-table">
+                                <span class="p-column-title">Descripción</span>
+                                {{ product.ingredient.description }}
+                            </td>
+                            <td class="td-table" style="text-align: center;">
+                                <span class="p-column-title">Código</span>
+                                {{ product.ingredient.sku }}
+                            </td>
+                            <td class="td-table" style="text-align: center;">
+                                <span class="p-column-title">Unidad</span>
+                                {{ product.ingredient.unit.abbreviation }}
+                            </td>
+                            <td class="td-table" style="text-align: right;">
+                                <span class="p-column-title">Cantidad Actual</span>
+                                <div class="flex justify-content-between align-items-center">
+                                    <button style="width: 20px; height: 20px;" pButton pRipple class="p-button-rounded p-button-info" icon="pi pi-minus" (click)="popStockDialog(product)" *ngIf="(this.permissions.includes('update-stocktaking') || this.isAdmin())" pTooltip="Retirar Stock" tooltipPosition="bottom"></button>
+                                    <span>{{ product.actualQuantity }}</span>
+                                    <button style="width: 20px; height: 20px;" pButton pRipple class="p-button-rounded p-button-info" icon="pi pi-plus" (click)="addStockDialog(product)" *ngIf="(this.permissions.includes('update-stocktaking') || this.isAdmin())" pTooltip="Agregar Stock" tooltipPosition="bottom"></button>
+                                </div>
+                            </td>
+                            <td class="td-table" style="text-align: center;">
+                                <span class="p-column-title">Cantidad Mínima</span>
+                                {{ product.minQuantity }}
+                            </td>
+                            <td class="td-table" style="text-align: right;">
+                                <span class="p-column-title">Precio</span>
+                                {{ product.price | currency:'COP':'symbol-narrow':'1.0-0' }}
+                            </td>
+                            <td class="td-table">
+                                <div class="flex">
+                                    <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" (click)="onEditProduct(product)" *ngIf="(this.permissions.includes('update-stocktaking') || this.isAdmin())" pTooltip="Editar Producto" tooltipPosition="bottom"></button>
+                                    <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-warning" (click)="deleteProduct(product)" *ngIf="(this.permissions.includes('delete-stocktaking') || this.isAdmin())" pTooltip="Eliminar Producto" tooltipPosition="bottom"></button>
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+
+            <p-dialog [(visible)]="deleteProductDialog" header="Confirm" [modal]="true" [style]="{ width: '450px' }">
+                <div class="flex align-items-center justify-content-center">
+                    <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem;"></i>
+                    <span>Esta seguro en eliminar el producto <b> {{ product.ingredient.name }} </b> </span>
+                </div>
+                <ng-template pTemplate="footer">
+                    <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (focus)="false" (click)="deleteProductDialog = false"></button>
+                    <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Si" autofocus (click)="confirmDelete()"></button>
+                </ng-template>
+            </p-dialog>
+
+            <p-dialog [(visible)]="deleteProductsDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+                <div class="flex align-items-center justify-content-center">
+                    <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                    <span>Esta seguro en eliminar los productos seleccionados?</span>
+                </div>
+                <ng-template pTemplate="footer">
+                    <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (focus)="false" (click)="deleteProductsDialog = false"></button>
+                    <button pButton pRipple icon="pi pi-check" class="p-button-text" label="si" autofocus (click)="confirmDeleteSelect(dt)"></button>
+                </ng-template>
+            </p-dialog>
+            <form [formGroup]="addForm">
+                <p-dialog [(visible)]="addDialog" header="Agregar Stock" [modal]="true" [style]="{ width: '700px' }">
+                    <div class="flex flex-column align-items-center gap-2">
+                        <div class="flex align-items-center justify-content-start">
+                            <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem;"></i>
+                            <span>¿Cuanto stock va a agregar?</span>
+                        </div>
+                        <div class="field flex flex-column col-9">
+                            <label for="quantity" class="font-medium text-900">Actualmente hay: <b>{{ productToAdd?.actualQuantity }}</b> de {{ productToAdd?.ingredient?.name }} </label>
+                            <input type="number" id="quantity" pInputText formControlName="quantity" placeholder="Digite la cantidad a agregar" icon="pi pi-unit">
+                        </div>
+                        <div class="field flex flex-column col-9">
+                            <label for="detail" class="font-medium text-900">Observaciones</label>
+                            <textarea type="text" id="detail" pInputText formControlName="detail" placeholder="Descripción de movimiento" maxlength="250"></textarea>
+                        </div>
+                    </div>
+                    <ng-template pTemplate="footer">
+                        <button pButton pRipple icon="pi pi-times" class="p-button-text" label="Cancelar" (click)="addDialog = false"></button>
+                        <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Confirmar" (click)="addStock()"></button>
+                    </ng-template>
+                </p-dialog>
+            </form>
+            <form [formGroup]="popForm">
+                <p-dialog [(visible)]="popDialog" header="Retirar Stock" [modal]="true" [style]="{ width: '700px' }">
+                    <div class="flex flex-column align-items-center gap-2">
+                        <div class="flex align-items-center justify-content-start">
+                            <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem;"></i>
+                            <span>¿Cuanto stock va a retirar?</span>
+                        </div>
+                        <div class="field flex flex-column col-9">
+                            <label for="quantity" class="font-medium text-900">Actualmente hay: <b>{{ productToAdd?.actualQuantity }}</b> de {{ productToAdd?.ingredient?.name }} </label>
+                            <input type="number" id="quantity" pInputText formControlName="quantity" placeholder="Digite la cantidad a retirar" icon="pi pi-unit">
+                        </div>
+                        <div class="field flex flex-column col-9">
+                            <label for="detail" class="font-medium text-900">Observaciones</label>
+                            <textarea type="text" id="detail" pInputText formControlName="detail" placeholder="Descripción de movimiento" maxlength="250"></textarea>
+                        </div>
+                    </div>
+                    <ng-template pTemplate="footer">
+                        <button pButton pRipple icon="pi pi-times" class="p-button-text" label="Cancelar" (click)="popDialog = false"></button>
+                        <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Confirmar" (click)="popStock()"></button>
+                    </ng-template>
+                </p-dialog>
+            </form>
+        </div>
+    </div>
+</div>

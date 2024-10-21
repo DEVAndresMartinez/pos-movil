@@ -1,0 +1,103 @@
+<div *ngIf="loading" class="loading-container">
+    Cargando...
+</div>
+
+<div *ngIf="!loading">
+    <div class="grid">
+        <div class="col-12">
+            <div class="card px-6 py-6">
+                <p-toast></p-toast>
+                <p-toolbar styleClass="mb-4" *ngIf="((this.permissions.includes('create-units') || this.permissions.includes('delete-unit') ) || this.isAdmin())">
+                    <ng-template pTemplate="left">
+                        <div class="my-2">
+                            <button pButton pRipple label="Nuevo" icon="pi pi-plus" class="p-button-success mr-2" (click)="openNew()" *ngIf="(this.permissions.includes('create-units') || this.isAdmin())"></button>
+                            <button pButton pRipple label="Eliminar" icon="pi pi-trash" class="p-button-danger" (click)="deleteSelectedUnit()" [disabled]="!selectedUnit || !selectedUnit.length" *ngIf="(this.permissions.includes('delete-unit') || this.isAdmin())"></button>
+                        </div>
+                    </ng-template>
+                </p-toolbar>
+
+                <p-table #dt [value]="units" [columns]="cols" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name','country.name','representative.name','status']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" [(selection)]="selectedUnit" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                    <ng-template pTemplate="caption">
+                        <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                            <h5 class="m-0">Tipos de unidades</h5>
+                            <span class="block mt-2 md:mt-0 p-input-icon-left">
+                                <i class="pi pi-search"></i>
+                                <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Buscar..."  class="w-full sm:w-auto"/>
+                            </span>
+                        </div>
+                    </ng-template>
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th style="width: 11rem" *ngIf="(this.permissions.includes('delete-unit') || this.isAdmin())">
+                                <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                            </th>
+                            <th pSortableColumn="name">Abreviatura <p-sortIcon field="name"></p-sortIcon></th>
+                            <th pSortableColumn="name">Nombre <p-sortIcon field="name"></p-sortIcon></th>
+                            <th></th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-unit>
+                        <tr>
+                            <td *ngIf="(this.permissions.includes('delete-unit') || this.isAdmin())">
+                                <p-tableCheckbox [value]="unit"></p-tableCheckbox>
+                            </td>
+                            <td style="width:40%; min-width:10rem;">
+                                <span class="p-column-title">Abreviatura</span>
+                                {{unit.abbreviation}}
+                            </td>
+                            <td style="width:40%; min-width:10rem;">
+                                <span class="p-column-title">Nombre</span>
+                                {{unit.name}}
+                            </td>
+                            <td>
+                                <div class="flex">
+                                    <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" (click)="editUnit(unit)" *ngIf="(this.permissions.includes('update-unit') || this.isAdmin())"></button>
+                                    <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-warning" (click)="deleteUnit(unit)" *ngIf="(this.permissions.includes('delete-unit') || this.isAdmin())"></button>
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+
+            <p-dialog [(visible)]="unitDialog" [style]="{width: '450px'}" header="Detalles de unidad" [modal]="true" class="p-fluid">
+                <form [formGroup]="unitForm" (ngSubmit)="saveUnit()">
+                    <div class="field">
+                        <label for="name">Nombre</label>
+                        <input type="text" pInputText id="name" formControlName="name" required autofocus/>
+                    </div>
+                    <div class="field">
+                        <label for="name">Abreviatura</label>
+                        <input type="text" pInputText id="code" formControlName="abbreviation" required autofocus/>
+                    </div>
+                </form>    
+                <ng-template pTemplate="footer">
+                    <button pButton pRipple label="Cancelar" icon="pi pi-times" class="p-button-text" (click)="hideDialog()"></button>
+                    <button pButton pRipple label="Guardar" icon="pi pi-check" class="p-button-text" (click)="saveUnit()"></button>
+                </ng-template>
+            </p-dialog>
+
+            <p-dialog [(visible)]="deleteUnitDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+                <div class="flex align-items-center justify-content-center">
+                    <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                    <span *ngIf="unit">Esta seguro en eliminar la unadad <b>{{unit.name}}</b>?</span>
+                </div>
+                <ng-template pTemplate="footer">
+                    <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deleteUnitDialog = false"></button>
+                    <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Si" (click)="confirmDelete()"></button>
+                </ng-template>
+            </p-dialog>
+
+            <p-dialog [(visible)]="deleteUnitsDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+                <div class="flex align-items-center justify-content-center">
+                    <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                    <span>Esta seguro en eliminar las unidades seleccionadas?</span>
+                </div>
+                <ng-template pTemplate="footer">
+                    <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deleteUnitsDialog = false"></button>
+                    <button pButton pRipple icon="pi pi-check" class="p-button-text" label="si" (click)="confirmDeleteSelected()"></button>
+                </ng-template>
+            </p-dialog>
+        </div>
+    </div>
+</div>

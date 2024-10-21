@@ -1,0 +1,83 @@
+<div *ngIf="loading" class="loading-container">
+    Cargando...
+</div>
+
+<div *ngIf="!loading">
+    <div class="grid">
+        <div class="col-12">
+            <div class="card">
+                <p-toast></p-toast>
+                <p-table #dt [value]="salesTable" [columns]="cols" responsiveLayout="scroll" [rows]="10" 
+                [globalFilterFields]="['invoiceSequence', 'statusDian', 'idClient', 'nameClient', 'statusSale', 'paymentMethod', 'totalSale', 'billingType', 'updatedAt']" 
+                [paginator]="true" [rowsPerPageOptions]="rowsPerPageOptions" [showCurrentPageReport]="true" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" [rowHover]="true"
+                dataKey="id">
+                    <ng-template pTemplate="caption">
+                        <div class="flex flex-column md:flex-row md:justify-content-between md:align-content-center">
+                            <h5 class="m-0 m-4">Reporte de Ventas</h5>
+                            <div class="flex flex-column md:flex-row gap-1 actions m-0 m-4">
+                                <span class="block p-input-icon-left">
+                                    <i class="pi pi-search"></i>
+                                    <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Buscar..." class="w-full sm:w-auto"/>
+                                </span>
+                                <p-dropdown [options]="statusDian" [(ngModel)]="selectedStatusDian" (onChange)="dianFilter()"></p-dropdown>
+                                <p-calendar [(ngModel)]="selectedDate" dateFormat="mm/dd/yy" placeholder="MM/DD/YYYY" (onSelect)="filterByDate()" [showIcon]="true"></p-calendar>
+                                <p-splitButton icon="pi pi-download" label="Descargar" [model]="items"></p-splitButton>
+                            </div>
+                        </div>
+                    </ng-template>
+                    <ng-template pTemplate="header">
+                        <th class="td-table">Factura</th>
+                        <th class="td-table">Estado DIAN</th>
+                        <th class="td-table">Identificación</th>
+                        <th class="td-table">Nombre Cliente</th>
+                        <th class="td-table">Estado</th>
+                        <th class="td-table">Forma de Pago</th>
+                        <th class="td-table">Tipo Factura</th>
+                        <th class="td-table">Fecha Venta</th>
+                        <th class="td-table">Valor Venta</th>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-sale>
+                        <tr>
+                            <td class="td-table" style="text-align: center;">
+                                <span class="p-column-title">Factura</span>
+                                {{ sale.invoiceSequence }}
+                            </td>
+                            <td class="td-table" style="text-align: center;">
+                                <span class="p-column-title">Estado DIAN</span>
+                                {{ sale.statusDian }}
+                            </td>
+                            <td class="td-table" style="text-align: center;">
+                                <span class="p-column-title">Identificación</span>
+                                {{ sale.idClient }}
+                            </td>
+                            <td class="td-table">
+                                <span class="p-column-title">Nombre Cliente</span>
+                                {{ sale.nameClient }}
+                            </td>
+                            <td class="td-table" style="text-align: center;">
+                                <span class="p-column-title">Estado</span>
+                                {{ sale.statusSale }}
+                            </td>
+                            <td class="td-table">
+                                <span class="p-column-title">Forma de Pago</span>
+                                {{ sale.paymentMethod }}
+                            </td>
+                            <td class="td-table" style="text-align: center;">
+                                <span class="p-column-title">Tipo Factura</span>
+                                {{ sale.billingType }}
+                            </td>
+                            <td class="td-table" style="text-align: center;">
+                                <span class="p-column-title">Fecha Venta</span>
+                                {{ sale.updatedAt }}
+                            </td>
+                            <td class="td-table" style="text-align: right;">
+                                <span class="p-column-title">Valor Venta</span>
+                                {{ sale.totalSale | currency:'COP':'symbol-narrow':'1.0-0' }}
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+        </div>
+    </div>
+</div>

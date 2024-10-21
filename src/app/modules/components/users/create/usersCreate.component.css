@@ -1,0 +1,30 @@
+.container {
+    margin-top: 5%;
+    margin-bottom: 5%;
+    display: flex;
+    justify-content: center;
+}
+
+.margin-right {
+    margin-right: 5%;
+}
+
+.margin-top {
+    margin-top: 3%;
+}
+
+.rolesdisabled {
+    pointer-events: none;
+    cursor: default;
+    opacity: 0.6;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield;
+}

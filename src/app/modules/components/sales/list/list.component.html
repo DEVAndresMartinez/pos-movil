@@ -1,0 +1,149 @@
+<div *ngIf="loading" class="loading-container">
+    Cargando...
+</div>
+
+<div *ngIf="!loading">
+    <div class="grid">
+        <div class="col-12">
+            <div class="card">
+                <p-toast></p-toast>
+                <p-table #dt [value]="sales" [columns]="cols" responsiveLayout="scroll" [rows]="10"
+                    [globalFilterFields]="['invoiceSequence', 'finalCustomer.identification', 'finalCustomer.fullName','customerId', 'paymentMethod.name', 'totalSale']"
+                    [paginator]="true" [rowsPerPageOptions]="rowsPerPageOptions" [showCurrentPageReport]="true"
+                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" [rowHover]="true"
+                    dataKey="id">
+                    <ng-template pTemplate="caption">
+                        <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                            <h5 class="m-0 m-4">Listado de Ventas</h5>
+                            <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center md:gap-2">
+                                <span class="block mt-2 md:mt-0 p-input-icon-left">
+                                    <p-dropdown [options]="status" optionLabel="name" optionValue="value" 
+                                    dropdownIcon="pi pi-filter" placeholder="Tipo de Factura" (onChange)="onStatusChange(dt, $event)">
+                                    </p-dropdown>
+                                </span>
+                                <span class="block mt-2 md:mt-0 p-input-icon-left">
+                                    <i class="pi pi-search"></i>
+                                    <input pInputText type="text" (input)="onGlobalFilter(dt, $event)"
+                                        placeholder="Buscar..." class="w-full sm:w-auto" />
+                                </span>
+                            </div>
+                        </div>
+                    </ng-template>
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th pSortableColumn="pendingInvoicesVerified">Estado DIAN</th>
+                            <th pSortableColumn="invoiceSequence">Consecutivo <p-sortIcon field="invoiceSequence"></p-sortIcon></th>
+                            <th pSortableColumn="finalCustomer.identification">ID Cliente <p-sortIcon field="finalCustomer.identification"></p-sortIcon></th>
+                            <th pSortableColumn="finalCustomer.fullName">Nombre <p-sortIcon field="finalCustomer.fullName"></p-sortIcon></th>
+                            <th pSortableColumn="updatedAt">Fecha actualización <p-sortIcon field="updatedAt"></p-sortIcon></th>
+                            <th pSortableColumn="status">Estado <p-sortIcon field="status"></p-sortIcon></th>
+                            <th pSortableColumn="paymentMethod.name">Metodo de Pago <p-sortIcon field="paymentMethod.name"></p-sortIcon></th>
+                            <th pSortableColumn="billingType"> Tipo Factura <p-sortIcon field="billingType"></p-sortIcon></th>
+                            <th pSortableColumn="totalSale">Total Venta <p-sortIcon field="totalSale"></p-sortIcon></th>
+                            <th style="text-align: center;">Acciones</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-sale>
+                        <tr>
+                            <td class="td-table justify-content-center">
+                                @if (sale.status === 'REJECTED') {
+                                    <i class="btn-default pi pi-minus px-0 py-0 flex align-items-center justify-content-center cursor-auto" pTooltip="Sin Validar" tooltipPosition="top"> </i>
+                                } @else {
+                                    @if (sale.pendingInvoicesVerified[0]?.status === 'ACCEPTED') {
+                                        <i class="btn-dian pi pi-check px-0 py-0 flex align-items-center justify-content-center cursor-auto" pTooltip="Aceptada" tooltipPosition="top"> </i>
+                                    } @else if (sale.pendingInvoicesVerified[0]?.status === 'REJECTED') {
+                                        <i class="btn-dian-none pi pi-ban px-0 py-0 flex align-items-center justify-content-center cursor-auto" pTooltip="Rechazada" tooltipPosition="top"> </i>
+                                    } @else {
+                                        <i class="btn-wait pi pi-spin pi-spinner px-0 py-0 flex align-items-center justify-content-center cursor-auto" pTooltip="Pendiente" tooltipPosition="top"> </i>
+                                    } 
+                                }
+                            </td>
+                            <td class="td-table">
+                                {{ sale.invoiceSequence }}
+                            </td>
+                            <td class="td-table">
+                                {{ sale.finalCustomer.identification }}
+                            </td>
+                            <td class="td-table">
+                                {{ sale.finalCustomer.fullName }}
+                            </td>
+                            <td class="td-table">
+                                {{ (sale.updatedAt).substring(0,10) }}
+                            </td>
+                            <td class="td-table" [ngClass]="{'plh-bad': sale.status === 'REJECTED', 'plh-ok': sale.status === 'PAID', 'plh-so': sale.status === 'CREATED'}">
+                                @if (sale.status === 'REJECTED') {
+                                    RECHAZADA 
+                                }  @else if (sale.status === 'CREATED') {
+                                    PENDIENTE
+                                } @else {
+                                    COBRADA
+                                }
+                            </td>
+                            <td class="td-table">
+                                {{ sale.paymentMethod?.name }}
+                            </td>
+                            <td class="td-table">
+                                @if (sale.billingType === 'FAC') {
+                                    ELECTRóNICA
+                                } @else {
+                                    POS
+                                }
+                            </td>
+                            <td class="td-table" style="text-align: right;">
+                                {{ sale.totalSale | currency:'COP':'symbol-narrow':'1.0-0' }}
+                            </td>
+                            <td class="td-table">
+                                <div class="flex">
+                                    <button *ngIf="sale.status === 'CREATED'" pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" (click)="upSale(sale)" pTooltip="Editar Venta" tooltipPosition="bottom"></button>
+                                    <button *ngIf="sale.status === 'CREATED'" pButton pRipple icon="pi pi-times" class="p-button-rounded p-button-warning mr-2" (click)="openCancelDialog(sale)" pTooltip="Cancelar Venta" tooltipPosition="bottom"></button>
+                                    <button *ngIf="sale.status === 'PAID'" pButton pRipple icon="pi pi-print" class="p-button-rounded p-button-info mr-2" (click)="openPrintDialog(sale)" pTooltip="Imprimir factura" tooltipPosition="bottom"></button>
+                                    <button *ngIf="sale.status === 'PAID'" pButton pRipple icon="pi pi-file-pdf" class="p-button-rounded p-button-alert mr-2" (click)="downloadPdf(sale)" pTooltip="Descargar PDF" tooltipPosition="bottom"></button>                                </div>
+                            </td>
+                        </tr>
+                    </ng-template>
+
+                </p-table>
+            </div>
+        </div>
+        <p-dialog [(visible)]="printSaleDialog" header="Imprimir Factura" [modal]="true" [style]="{ width: '540px'}">
+            <div class="fled align-content-center justify-content-center">
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem;"></i>
+                <span>Esta seguro de Imprimir la factura {{selectedSale?.name }} ? </span>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="Cancelar" (click)="printSaleDialog = false" (focus)="false"></button>
+                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Confirmar" autofocus (click)="printSale()"></button>
+            </ng-template>
+        </p-dialog>
+        <p-dialog [(visible)]="envelopeDialog" header="Imprimir Factura" [modal]="true" [style]="{ width: '540px'}">
+            <div class="fled align-content-center justify-content-center">
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem;"></i>
+                <span>Esta seguro de Enviar la factura al cliente {{selectedSale?.finalCustomer?.fullName }} ? </span>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="Cancelar" (click)="envelopeDialog = false"></button>
+                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Confirmar" (click)="envelopeSale()"></button>
+            </ng-template>
+        </p-dialog>
+        <p-dialog [(visible)]="dianDialog" header="Imprimir Factura" [modal]="true" [style]="{ width: '540px'}">
+            <div class="fled align-content-center justify-content-center">
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem;"></i>
+                <span>Esta seguro de Enviar la factura {{selectedSale?.name }} a la Dian ? </span>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="Cancelar" (click)="dianDialog = false"></button>
+                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Confirmar" (click)="dianSale()"></button>
+            </ng-template>
+        </p-dialog>
+        <p-dialog [(visible)]="cancelDialog" header="Cancelar Venta" [modal]="true" [style]="{ width: '540px'}">
+            <div class="fled align-content-center justify-content-center">
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem;"></i>
+                <span>Esta seguro de cancelar esta venta del cliente: {{ recjectedSale?.finalCustomer?.fullName }}</span>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="Cancelar" (click)="cancelDialog = false"></button>
+                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Confirmar" (click)="editSales()"></button>
+            </ng-template>
+        </p-dialog>
+    </div>
+</div>

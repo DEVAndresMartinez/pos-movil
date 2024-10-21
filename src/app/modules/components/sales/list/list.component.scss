@@ -1,0 +1,102 @@
+$scale: 14px !default;
+$breakpoint: 992px !default;
+
+.p-button-rounded {
+  width: 30px;
+  height: 30px;
+  border: none;
+}
+
+.custom-svg-icon {
+  background-image: url("../../../../../assets/modules/images/Icono\ Dian-01.svg");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  background-color: #828282;
+}
+
+.custom-svg-icon:hover {
+  background-color: #707070;
+}
+
+.plh-bad {
+  color: #ef4444;
+}
+
+.plh-ok {
+  color: #22c55e;
+}
+
+.plh-so {
+  color: #f59e0b;
+}
+
+.card {
+  padding: 3rem;
+}
+
+.btn-dian {
+  background-color: #22c55e;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+}
+
+.btn-dian-none {
+  background-color: #ef4444;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  color: #ffffff;
+}
+
+.btn-wait {
+  background-color: #f59e0b;
+  width: 25px;
+  height: 25px;
+  border-radius: 50% ;
+}
+
+.btn-default {
+  background-color: #ffffff;
+  width: 25px;
+  height: 25px;
+  border-radius: 50% ;
+}
+
+@media screen and (max-width: $breakpoint) {
+  .card {
+    padding: 2rem;
+
+    h5 {
+      margin: 10px !important;
+    }
+
+    .table-header {
+      display: flex;
+      flex-direction: row !important;
+      justify-content: space-between;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .btn-cash {
+      width: 15px;
+      border-radius: 50%;
+      justify-content: center;
+    }
+
+    .button-label {
+      display: none;
+    }
+
+    .td-table {
+      font-size: 12px;
+      padding: 10px;
+    }
+  }
+}

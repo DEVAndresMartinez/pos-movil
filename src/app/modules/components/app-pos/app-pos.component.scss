@@ -1,0 +1,168 @@
+$scale: 14px !default;
+$breakpoint: 992px !default;
+
+.card {
+  height: 82vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.btn {
+  width: 200px;
+}
+
+.btn-trash {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+}
+
+.table-header tbody {
+  height: 100%;
+  overflow: auto;
+}
+
+.info {
+  height: 60%;
+  overflow: auto;
+}
+
+.info::-webkit-scrollbar {
+  width: 1px;
+}
+
+.info::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+
+.info::-webkit-scrollbar-thumb:hover {
+  background: #b3b3b3;
+}
+
+.list-products {
+  padding: 5px;
+  height: 100%;
+  overflow: auto;
+}
+
+.list-products::-webkit-scrollbar {
+  width: 5px;
+}
+
+.list-products::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+
+.list-products::-webkit-scrollbar-thumb:hover {
+  background: #b3b3b3;
+}
+
+.button-pay {
+  width: auto;
+  height: 40px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background-color: #ffffff;
+  color: #000000;
+  font-weight: 400;
+  font-size: 12px;
+  text-align: center;
+  border-color: #929393;
+}
+
+.button-pay.selected {
+  background-color: #f59e0b;
+  border: none;
+}
+
+.label {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.peyment-input {
+  height: 40px;
+  width: 100% !important;
+}
+
+.form-client {
+  max-width: 800px !important;
+}
+
+.search-bar {
+  position: sticky;
+  top: 0;
+  z-index: 150;
+}
+
+.product-item {
+  cursor: pointer;
+}
+
+.btn-act {
+  width: 25px !important;
+  height: 25px !important;
+  padding: 0 !important;
+  min-width: 25px !important;
+  border-radius: 50%;
+}
+
+.status-green:hover {
+  background-color: #22c55e80;
+  color: #000000;
+}
+
+.status-yellow:hover {
+  background-color: #f9c40480;
+  color: #000000;
+}
+
+.status-red:hover {
+  background-color: #f4000080;
+  color: #000000;
+}
+
+.payment-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.peyment-input-number {
+  width: 800px;
+}
+
+.paymentMethodClass {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2px;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+@media screen and (max-width: $breakpoint) {
+  .card {
+    margin: 2px;
+  }
+
+  .peyment-input-number {
+    width: 400px;
+  }
+
+  .paymentMethodClass {
+    display: flex;
+    justify-content: center;
+  }
+}

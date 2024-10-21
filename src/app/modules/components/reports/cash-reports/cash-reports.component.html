@@ -1,0 +1,68 @@
+<div *ngIf="loading" class="loading-container">
+    Cargando...
+</div>
+
+<div *ngIf="!loading">
+    <div class="grid">
+        <div class="col-12">
+            <div class="card">
+                <p-toast></p-toast>
+                <p-table #dt [value]="cashTable" [(selection)]="filteredCashTable" [columns]="cols" responsiveLayout="scroll" [rows]="10" 
+                [globalFilterFields]="['userName', 'openingBalance', 'closingBalance']" [paginator]="true" [rowsPerPageOptions]="rowsPerPageOptions" 
+                [showCurrentPageReport]="true" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" [rowHover]="true"
+                dataKey="id">
+                <ng-template pTemplate="caption">
+                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-content-center">
+                        <h5 class="m-0 m-4">Reporte de Turnos</h5>
+                        <div class="flex flex-column md:flex-row gap-1 actions m-0 m-4">
+                            <span class="block p-input-icon-left">
+                                <i class="pi pi-search"></i>
+                                <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Buscar..." class="w-full sm:w-auto"/>
+                            </span>
+                            <p-dropdown [options]="timeRangeOptions" [(ngModel)]="selectedTimeRange" placeholder="Seleccionar horario"(onChange)="filterByTimeRange()"></p-dropdown>
+                            <p-calendar [(ngModel)]="dateRange" selectionMode="range" (keypress)="filterByDateRange()" placeholder="Seleccionar las fechas" [showIcon]="true"></p-calendar>
+                            <p-splitButton icon="pi pi-download" label="Descargar" [model]="items"></p-splitButton>
+                        </div>
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <th class="td-table">Abrir Turno</th>
+                    <th class="td-table">Cerrar Turno</th>
+                    <th class="td-table">Base Inicial</th>
+                    <th class="td-table" style="text-align: center;">Monto de Cierre </th>
+                    <th class="td-table" style="text-align: center;">Persona que Abrió </th>
+                    <th class="td-table" style="text-align: center;">Persona que Cerró </th>
+                </ng-template>
+                <ng-template pTemplate="body" let-cash>
+                    <tr>
+                        <td class="td-table" style="text-align: center;">
+                            <span class="p-column-title">Fecha Turno</span>
+                            {{ cash.createdAt }}
+                        </td>
+                        <td class="td-table" style="text-align: center;">
+                            <span class="p-column-title">Base Inicial</span>
+                            {{ cash.closingDate }}
+                        </td>
+                        <td class="td-table" style="text-align: center;">
+                            <span class="p-column-title">Ventas en Efectivo</span>
+                            {{ cash.openingBalance | currency:'COP':'symbol-narrow':'1.0-0' }}
+                        </td>
+                        <td class="td-table" style="text-align: center;">
+                            <span class="p-column-title">Ventas por tarjeta</span>
+                            {{ cash.closingBalance | currency:'COP':'symbol-narrow':'1.0-0' }}
+                        </td>
+                        <td class="td-table" style="text-align: center;">
+                            <span class="p-column-title">Otras Ventas</span>
+                            {{ cash.userName }}
+                        </td>
+                        <td class="td-table" style="text-align: center;">
+                            <span class="p-column-title">Total Ventas</span>
+                            {{ cash.userName}}
+                        </td>
+                    </tr>
+                </ng-template>
+                </p-table>
+            </div>
+        </div>
+    </div>
+</div>

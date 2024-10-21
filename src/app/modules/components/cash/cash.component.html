@@ -1,0 +1,174 @@
+<div *ngIf="loading" class="loading-container">
+    Cargando...
+</div>
+
+<div *ngIf="!loading">
+    <div class="grid">
+        <div class="col-12">
+            <div class="card">
+                <p-toast></p-toast>
+                <p-table #dt [value]="cashFilter" [columns]="cols" responsiveLayout="scroll" [rows]="10"
+                [paginator]="true" [rowsPerPageOptions]="rowsPerPageOptions" [showCurrentPageReport]="true"
+                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" [rowHover]="true"
+                dataKey="id">
+                <ng-template pTemplate="caption">
+                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-content-center">
+                        <h5 class="m-0 m-4">Historial de Turnos</h5>
+                        <div class="flex flex-column flex flex-column md:flex-row md:justify-content-between md:align-items-center md:gap-2 table-header">
+                            <span class="block mt-2 md:mt-0 p-input-icon-left">
+                                <p-calendar [(ngModel)]="selectedDate" [iconDisplay]="'input'" [showIcon]="true" dateFormat="dd/mm/yy" placeholder="DD/MM/YYYY" (onSelect)="onDateSelect($event)"></p-calendar>
+                            </span>
+                            <span class="block mt-2 md:mt-0 p-input-icon-left">
+                                <button [disabled]="!btnActive" pButton pRipple icon="pi pi-power-off" class="btn-cash p-button-success mr-2" 
+                                        *ngIf="!statusCash && (this.permissions.includes('create-cash-closing') || this.isAdmin())" (click)="openStartDialog()">
+                                    <span class="button-label px-1 mb-1">Iniciar Turno</span>
+                                </button>
+                                <button [disabled]="!btnActive" pButton pRipple icon="pi pi-power-off" class="btn-cash p-button-danger mr-2" 
+                                        *ngIf="statusCash && (this.permissions.includes('close-cash-closing') || this.isAdmin())" (click)="openEndDialog()">
+                                    <span class="button-label px-1 mb-1">Cerrar Turno</span>
+                                </button>
+
+                            </span>
+                        </div>
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <th class="td-table">Estado</th>
+                    <th class="td-table" pSortableColumn="openingDate">Fecha Turno <p-sortIcon field="openingDate"></p-sortIcon></th>
+                    <th class="td-table">Base Inicial</th>
+                    <th class="td-table" style="text-align: center;">Ventas en Efectivo </th>
+                    <th class="td-table" style="text-align: center;">Ventas por Tarjeta </th>
+                    <th class="td-table" style="text-align: center;">Otras Ventas </th>
+                    <th class="td-table" style="text-align: center;">Total Ventas </th>
+                    <th class="td-table" style="text-align: center;">Total Cierre </th>
+                    <th class="td-table" style="text-align: center;"> Acciones</th>
+                </ng-template>
+                <ng-template pTemplate="body" let-cash>
+                    <tr [ngClass]="{'bg-gray-100': cash.status === 'CLOSED'}" >
+                        <td class="td-table">
+                            @if (cash.status === 'OPEN') {
+                                <span style="cursor: default;" pButton pRipple icon="pi pi-folder-open" class="p-button-rounded p-button-danger w-2rem h-2rem" pTooltip="Turno abierto" tooltipPosition="bottom"></span>
+                            } @else {
+                                <span style="cursor: default;" pButton pRipple icon="pi pi-folder" class="p-button-rounded p-button-warning w-2rem h-2rem" pTooltip="Turno cerrado" tooltipPosition="bottom"></span>
+                            }
+                        </td>
+                        <td class="td-table" style="text-align: center;">
+                            <span class="p-column-title">Fecha Turno</span>
+                            {{ (cash.openingDate).substring(0,16) }}
+                        </td>
+                        <td class="td-table" style="text-align: right;">
+                            <span class="p-column-title">Base Inicial</span>
+                            {{ cash.openingBalance | currency:'COP':'symbol-narrow':'1.0-0'}}
+                        </td>
+                        <td class="td-table" style="text-align: right;">
+                            <span class="p-column-title">Ventas en Efectivo</span>
+                            {{ cash.totalCash | currency:'COP':'symbol-narrow':'1.0-0' }}
+                        </td>
+                        <td class="td-table" style="text-align: right;">
+                            <span class="p-column-title">Ventas por tarjeta</span>
+                            {{ cash.totalCard | currency:'COP':'symbol-narrow':'1.0-0' }}
+                        </td>
+                        <td class="td-table" style="text-align: right;">
+                            <span class="p-column-title">Otras Ventas</span>
+                            {{ cash.totalOtherMethods | currency:'COP':'symbol-narrow':'1.0-0' }}
+                        </td>
+                        <td class="td-table" style="text-align: right;">
+                            <span class="p-column-title">Total Ventas</span>
+                            {{ cash.totalSales | currency:'COP':'symbol-narrow':'1.0-0' }}
+                        </td>
+                        <td class="td-table" style="text-align: right;">
+                            <span class="p-column-title">Total Cierre</span>
+                            {{ cash.closingBalance | currency:'COP':'symbol-narrow':'1.0-0'}}
+                        </td>
+                        <td class="td-table">
+                            <div class="flex justify-content-center">
+                                <button *ngIf="cash.status === true" pButton pRipple icon="pi pi-download" class="w-2rem h-2rem p-button-rounded p-button-success mr-2" (click)="downloadCash(cash)" pTooltip="Descargar Reporte de Turno" tooltipPosition="bottom"></button>
+                                <button pButton pRipple icon="pi pi-eye" class="w-2rem h-2rem p-button-rounded p-button-info mr-2" (click)="openPreview(cash)" pTooltip="Vista previa de turno" tooltipPosition="bottom"></button>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+                </p-table>
+            </div>
+            <form [formGroup]="cashOpenForm">
+                <p-dialog [(visible)]="startCashDialog" header="Iniciar Turno" [modal]="true" [style]="{ width: '700px' }">
+                    <div class="flex flex-column align-items-center gap-5T">
+                        <div class="flex align-items-center justify-content-center">
+                            <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem;"></i>
+                            <span>Debe iniciar turno para este usuario antes de empezar a vender </span>
+                        </div>
+                        <div class="field flex flex-column col-9">
+                            <label for="openingBalance" class="font-medium text-900">Base Inicial <span style="color: #EF0000;">*</span></label>
+                            <input type="text" id="openingBalance" pInputText formControlName="openingBalance" (keydown.enter)="openCash()" placeholder="$ Digite con cuanto dinero iniciará el turno" icon="pi pi-DOLLAR" required appCurrencyFormatter (keypress)="restrictInputPrice($event)">
+                        </div>
+                    </div>
+                    <ng-template pTemplate="footer">
+                        <button pButton pRipple icon="pi pi-times" class="p-button-text" label="Cancelar" (click)="closeStartDialog()"></button>
+                        <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Confirmar" (click)="openCash()"></button>
+                    </ng-template>
+                </p-dialog>
+            </form>
+            <form [formGroup]="cashCloseForm">
+                <p-dialog [(visible)]="endCashDialog" header="Cierre de Caja" [modal]="true" [style]="{ width: '700px' }" (onHide)="closeStartDialog()">
+                    <div class="flex flex-column align-items-center gap-2">
+                        <div class="flex align-items-center justify-content-start">
+                            <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem;"></i>
+                            <span>Dinero esperado en caja  </span>
+                        </div>
+                        <div class="field flex flex-column col-9">
+                            <label for="closingBalance" class="font-medium text-900">Dinero Real en Caja <span style="color: #EF0000;">*</span></label>
+                            <input type="text" id="closingBalance" pInputText formControlName="closingBalance" placeholder="$ Digite con cuanto dinero términa el turno" icon="pi pi-DOLLAR" required appCurrencyFormatter (keypress)="restrictInputPrice($event)">
+                        </div>
+                        <div class="field flex flex-column col-9">
+                            <label for="observations" class="font-medium text-900">Observaciones</label>
+                            <textarea type="text" id="observations" pInputText formControlName="observations" placeholder="Tiene observaciones?" maxlength="250"></textarea>
+                        </div>
+                    </div>
+                    <ng-template pTemplate="footer">
+                        <button pButton pRipple icon="pi pi-times" class="p-button-text" label="Cancelar" (click)="closeEndDialog()"></button>
+                        <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Confirmar" (click)="closeCash()"></button>
+                    </ng-template>
+                </p-dialog>
+            </form>
+            <p-dialog [(visible)]="previewCashDialog" header="Vista Previa de Turno" [modal]="true" [style]="{ width: '700px' }" (onHide)="closeEndDialog()">
+                <div class="flex flex-column align-items-center gap-2">
+                    <div class="flex align-items-center justify-content-start">
+                        <i class="pi pi-info-circle mr-3" style="font-size: 2rem;"></i>
+                        <span>Vista previa de las ventas </span>
+                    </div>
+                    <div class="flex flex-column col-9">
+                        <div class="flex justify-content-between">
+                            <label for="openingBalance" class="font-medium text-900">Base Inicial</label>
+                            <span id="openingBalance"> {{ previewCash?.openingBalance || previewCash?.TotalCashSalesMoreOpeningBalance | currency:'COP':'symbol-narrow':'1.0-0' }} </span>
+                        </div>
+                        <div class="flex justify-content-between">
+                            <label for="totalCard" class="font-medium text-900">Total Tarjetas</label>
+                            <span id="totalCard"> {{ previewCash?.totalCard || previewCash?.Total?.totalCard | currency:'COP':'symbol-narrow':'1.0-0' }} </span>
+                        </div>
+                        <div class="flex justify-content-between">
+                            <label for="totalCash" class="font-medium text-900">Total Efectivo</label>
+                            <span id="totalCash"> {{ previewCash?.totalCash || previewCash?.Total?.totalCash| currency:'COP':'symbol-narrow':'1.0-0' }} </span>
+                        </div>
+                        <div class="flex justify-content-between">
+                            <label for="totalOtherMethods" class="font-medium text-900">Total Otos Métodos</label>
+                            <span id="totalOtherMethods"> {{ previewCash?.totalOtherMethods || previewCash?.Total?.totalOtherMethods | currency:'COP':'symbol-narrow':'1.0-0' }} </span>
+                        </div>
+                        <div class="flex justify-content-between">
+                            <label for="totalSales" class="font-medium text-900">Total Ventas</label>
+                            <span id="totalSales"> {{ previewCash?.totalSales || previewCash?.Total?.totalSales | currency:'COP':'symbol-narrow':'1.0-0' }} </span>
+                        </div>
+                        <hr>
+                        <div class="flex justify-content-between">
+                            <label for="totalCash" class="font-medium text-900">Cierre de Caja</label>
+                            <span id="shiftBalance"> {{ previewCash?.closingBalance || previewCash?.TotalCashSalesMoreOpeningBalance | currency:'COP':'symbol-narrow':'1.0-0' }} </span>
+                        </div>
+                        <hr>
+                    </div>
+                </div>
+                <ng-template pTemplate="footer">
+                    <button pButton pRipple icon="pi pi-times" class="p-button-text" label="OK" (click)="previewCashDialog = false"></button>
+                </ng-template>
+            </p-dialog>
+        </div>
+    </div>
+</div>

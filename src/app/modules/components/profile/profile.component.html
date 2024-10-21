@@ -1,0 +1,45 @@
+<div *ngIf="loading">
+    Cargando...
+</div>
+<div *ngIf="!loading">
+    <div class="card profile-card">
+        <div class="header">
+            <div class="flex flex-wrap gap-2 align-items-center justify-content-between">
+                <h2 class="margin-right">Perfil de Usuario</h2>
+                <button *ngIf="!isSuperUser" (click)="navigateToEditUser()" pButton class="p-button-outlined w-full sm:w-auto flex-order-0 sm:flex-order-1" icon="pi pi-user-edit" label="Editar Perfil"></button>
+            </div>
+        </div>
+        <div class="profile-image">
+            <img src="https://www.kindpng.com/picc/m/78-786678_avatar-hd-png-download.png" alt="Profile Image">
+        </div>
+        <div class="user-details">
+            <div class="p-field">
+                <label for="firstName" class="p-d-block">Nombre:</label>
+                <span class="bg-white border-primary height">{{loginUser()?.firstName}}</span>
+            </div>
+            <div class="p-field">
+                <label for="lastName" class="p-d-block">Apellido:</label>
+                <span class="bg-white border-primary height">{{loginUser()?.lastName}}</span>
+            </div>
+            <div class="p-field">
+                <label for="email" class="p-d-block">Email:</label>
+                <span class="bg-white border-primary height">{{loginUser()?.email}}</span>
+            </div>
+            <div class="p-field">
+                <label for="cellPhone" class="p-d-block">Teléfono:</label>
+                <span class="bg-white border-primary height">{{loginUser()?.cellPhone}}</span>
+            </div>
+            <div class="p-field">
+                <label for="roles" class="p-d-block">Rol:</label>
+                <ng-container *ngIf="(loginUser()?.roles?.length ?? 0) > 0; else noRole">
+                    <span class="bg-white border-primary height" *ngFor="let role of loginUser()?.roles">{{role.name}}</span>
+                </ng-container>
+                <ng-template #noRole><span class="bg-white border-primary height">Sin Role</span></ng-template>
+            </div>
+            <div class="p-field">
+                <label for="status" class="p-d-block">Estado:</label>
+                <span class="bg-white border-primary height">{{loginUser()?.status}}</span>
+            </div>
+        </div>
+    </div>
+</div>

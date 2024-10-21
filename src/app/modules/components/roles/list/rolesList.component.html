@@ -1,0 +1,37 @@
+<div *ngIf="loading">
+    Cargando...
+</div>
+<div *ngIf="!loading">
+    <div class="card">
+        <p-table #dt [value]="roles" [paginator]="true" [rows]="10" [showCurrentPageReport]="true" responsiveLayout="scroll"
+            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" [rowsPerPageOptions]="[10,25,50]"
+            [globalFilterFields]="['name', 'permissions']">
+            <ng-template pTemplate="caption">
+                <div class="flex flex-wrap gap-2 align-items-center justify-content-between">
+                    <span class="p-input-icon-left w-full sm:w-20rem flex-order-1 sm:flex-order-0">
+                        <i class="pi pi-search"></i>
+                        <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Buscar" class="w-full" />
+                    </span>
+                    <button  *ngIf="permissions.includes('create-roles') || isAdmin()" (click)="navigateToCreateRole()" pButton class="p-button-outlined w-full sm:w-auto flex-order-0 sm:flex-order-1" icon="pi pi-user-plus" label="Añadir role"></button>
+                </div>
+            </ng-template> 
+            <ng-template pTemplate="header">
+                <tr>
+                    <th style="width:5%"></th>
+                    <th pSortableColumn="name" class="white-space-nowrap" style="width:70%">Nombre <p-sortIcon field="name"></p-sortIcon></th>
+                    <th style="width:15%"></th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-role>
+                <tr>
+                    <td></td>
+                    <td class="margin-left-10">{{role.name}}</td>
+                    <td>
+                        <p-menu #menu [model]="role.items"></p-menu>
+                    </td>
+                    <!-- <td><p-progressBar [value]="customer.activity" [showValue]="false" [style]="{'height':'.5rem'}"></p-progressBar></td> -->
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</div>

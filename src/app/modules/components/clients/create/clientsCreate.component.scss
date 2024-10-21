@@ -1,0 +1,44 @@
+.container {
+    margin-top: 5%;
+    margin-bottom: 5%;
+    display: flex;
+    justify-content: center;
+}
+
+.margin-right {
+    margin-right: 5%;
+}
+
+.margin-top {
+    margin-top: 3%;
+}
+
+.btn-active{
+    opacity: .5;
+    pointer-events: none;
+    cursor: not-allowed;
+    text-align: center;
+}  
+
+.btn-todo {
+    background-color: #d9d9d9;
+    color: #000;
+    border: none;
+    border-radius: 4px;
+    padding: 5px 8px;
+    cursor: pointer;
+}
+
+.btn-todo:hover {
+    background-color: #c9c9c9;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield;
+}

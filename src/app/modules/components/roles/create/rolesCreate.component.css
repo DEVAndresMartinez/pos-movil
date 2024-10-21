@@ -1,0 +1,65 @@
+.separator {
+    border-bottom: 1px solid #000; /* Cambia el color según tu preferencia */
+    margin: 10px 0; /* Ajusta el margen según tu preferencia */
+}
+
+
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 10vh;
+}
+
+.disabledRole {
+    pointer-events: none; 
+    opacity: 0.6; 
+}
+
+.checkboxEdit {
+    margin-left: 3%;
+    pointer-events: auto; 
+    opacity: 1; 
+}
+
+.checkboxView {
+    margin-left: 3%;
+    pointer-events: none; 
+    opacity: 0.6; 
+}
+
+.container-button {
+    margin-top: 5%;
+    margin-bottom: 5%;
+    display: flex;
+    justify-content: center;
+}
+
+.model-title{
+    margin: 0 5px 15px 10px;
+}
+
+.margin-right {
+    margin-right: 5%;
+}
+
+.margin-top {
+    margin-top: 1%;
+}
+
+.checkbox-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.checkbox-container > div {
+    flex-basis: calc(33.3333% - 10px);
+    margin-bottom: 10px;
+}
+
+@media screen and (max-width: 768px) {
+    .checkbox-container > div {
+        flex-basis: calc(50% - 10px);
+    }
+    
+}

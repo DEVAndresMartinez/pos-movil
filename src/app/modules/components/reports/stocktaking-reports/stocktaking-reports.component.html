@@ -1,0 +1,69 @@
+<div *ngIf="loading" class="loading-container">
+    Cargando...
+</div>
+
+<div *ngIf="!loading">
+    <div class="grid">
+        <div class="col-12">
+            <div class="card">
+                <p-toast></p-toast>
+                <p-table #dt [value]="stocktacking" [columns]="cols" responsiveLayout="scroll" [rows]="10" 
+                [globalFilterFields]="['nameStock', 'skuStock', 'undStock', 'minQuantity', 'actualQuantity', 'price']" 
+                [paginator]="true" [rowsPerPageOptions]="rowsPerPageOptions" [showCurrentPageReport]="true" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" [rowHover]="true"
+                dataKey="id">
+                    <ng-template pTemplate="caption">
+                        <div class="flex flex-column md:flex-row md:justify-content-between md:align-content-center">
+                            <h5 class="m-0 m-4">Reporte de Inventario</h5>
+                            <div class="flex flex-column md:flex-row gap-1 actions m-0 m-4 align-items-center">
+                                <span class="block p-input-icon-left vertical-align-middle">
+                                    <p-checkbox [(ngModel)]="minStockStatus" [binary]="true" inputId="binary" (onChange)="minStockFilter()" pTooltip="Productos con Stock mínimo" tooltipPosition="bottom"/>
+                                </span>
+                                <span class="block p-input-icon-left">
+                                    <i class="pi pi-search"></i>
+                                    <input pInputText type="text" [(ngModel)]="filter" (input)="onGlobalFilter(dt, $event)" placeholder="Buscar..." class="w-full sm:w-auto"/>
+                                </span>
+                                <p-splitButton icon="pi pi-download" label="Descargar" [model]="items"></p-splitButton>
+                            </div>
+                        </div>
+                    </ng-template>
+                    <ng-template pTemplate="header">
+                        <th pSortableColumn="nameStock" class="td-table">Nombre Producto <p-sortIcon field="nameStock"></p-sortIcon> </th>
+                        <th class="td-table">Sku Producto</th>
+                        <th class="td-table">Unidad Producto</th>
+                        <th pSortableColumn="minQuantity" class="td-table">Cantidad Mínima <p-sortIcon field="minQuantity"></p-sortIcon> </th>
+                        <th pSortableColumn="actualQuantity" class="td-table">Cantidad Actual <p-sortIcon field="actualQuantity"></p-sortIcon> </th>
+                        <th pSortableColumn="price" class="td-table">Precio Producto <p-sortIcon field="price"></p-sortIcon> </th>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-stock>
+                        <tr>
+                            <td class="td-table">
+                                <span class="p-column-title">Nombre Producto</span>
+                                {{ stock.nameStock }}
+                            </td>
+                            <td class="td-table" style="text-align: center;">
+                                <span class="p-column-title">Sku Producto</span>
+                                {{ stock.skuStock }}
+                            </td>
+                            <td class="td-table" style="text-align: center;">
+                                <span class="p-column-title">Unidad Producto</span>
+                                {{ stock.undStock }}
+                            </td>
+                            <td class="td-table" style="text-align: center;">
+                                <span class="p-column-title">Cantidad Mínima</span>
+                                {{ stock.minQuantity }}
+                            </td>
+                            <td class="td-table" style="text-align: center;">
+                                <span class="p-column-title">Cantidad Actual</span>
+                                {{ stock.actualQuantity }}
+                            </td>
+                            <td class="td-table" style="text-align: center;">
+                                <span class="p-column-title">Precio Producto</span>
+                                {{ stock.price | currency: 'COP':'symbol-narrow':'1.0-0' }}
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+        </div>
+    </div>
+</div>

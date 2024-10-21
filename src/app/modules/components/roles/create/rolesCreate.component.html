@@ -1,0 +1,82 @@
+<div *ngIf="loading">
+    Cargando...
+</div>
+<div *ngIf="!loading">
+    <div class="card">
+        <div class="field flex justify-content-between">
+            <span class="text-900 text-xl font-bold pt-4 pr-4 pl-4 block">{{ isEdit ? 'Editar Permisos del Rol' : isView ? '  Permisos del Rol' : 'Crear Role' }}</span>
+            <form class="grid pt-4 pr-4 pl-4" [formGroup]="rolesForm" (ngSubmit)="onSubmit()">
+                <div class="input-group" style="display: flex;">
+                    <input *ngIf="(isEdit && this.loginPermissions.includes('assign-permission-to-role')) || isAdmin() || isView; else create" class="disabledRole" id="nickname" type="text" formControlName="name" pInputText required>
+                    <ng-template #create>
+                        <input id="nickname" type="text" formControlName="name" pInputText required>
+                    </ng-template>
+                    <div *ngIf="!isAdminRole">
+                        <button *ngIf="!editRole" type="button" class="input-group-append" (click)="onEditRolName()" style="border: none; background: none;">
+                            <span class="input-group-text">
+                                <i [ngClass]="'pi pi-pencil'"></i>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="flex justify-content-center">
+            <div class="col-12 lg:col-10">
+                <div class="grid formgrid p-fluid">
+                    <div *ngIf="(editRole || isAdminRole) && (!isView || isAdminRole )" class="col-12 container-button">
+                        <div *ngIf="!isEdit" class="margin-right">
+                            <button pButton pRipple icon="pi pi-arrow-circle-left" label="Volver" class="w-auto" (click)="onBack()"></button>
+                        </div>
+                        <div *ngIf="!isEdit">
+                            <button pButton pRipple icon="pi pi-save" label="Guardar Rol" class="w-auto mt-3" (click)="onSubmit()"></button>
+                        </div>
+                    </div>
+                    <form class="margin-top" *ngIf="((isEdit && this.loginPermissions.includes('assign-permission-to-role')) || isView || isAdmin()) && !isAdminRole">
+                        <div class="field mb-4 col-12 md:col-12">
+                            <div class="table-responsive">
+                                <form *ngIf="(isEdit && this.loginPermissions.includes('assign-permission-to-role')) || (isEdit && isAdmin())" [formGroup]="myForm">
+                                    <div *ngFor="let permission of permissions">
+                                        <label>
+                                            <input 
+                                                type="checkbox"
+                                                [checked]="isPermissionChecked(permission.id)"
+                                                (change)="onChangeCheckbox(permission.id, $event)"
+                                            /> {{ permission.name }}
+                                        </label>
+                                    </div>                                    
+                                </form>                            
+                                <form *ngIf="isView">
+                                    <div *ngIf="rolePermissionsActiveted.length === 0">
+                                        <label for="">No hay permisos asignados</label>
+                                    </div>
+                                    <div *ngFor="let permission of rolePermissionsActiveted">
+                                        <label>
+                                            <li>
+                                                {{ permission.name }}
+                                            </li> 
+                                        </label>
+                                    </div>
+                                </form>                     
+                            </div>                    
+                        </div>
+                    </form> 
+                    <div *ngIf="(isView||(isEdit && this.loginPermissions.includes('assign-permission-to-role')) || isAdmin()) && !isAdminRole" class="col-12 container-button">
+                        <div class="margin-right">
+                            <button pButton pRipple icon="pi pi-arrow-circle-left" label="Volver" class="w-auto mt-3 " (click)="onBack()"></button>
+                        </div>
+                        <div *ngIf="(isView && this.loginPermissions.includes('update-role')) || (isView && isAdmin())">
+                            <button pButton pRipple icon="pi pi-pencil" label="Editar" class="w-auto mt-3" (click)="onSubmitPermission()"></button>
+                        </div>
+                        <div *ngIf="isEdit">
+                            <button pButton pRipple icon="pi pi-save" label="Guardar" class="w-auto mt-3" (click)="onSubmitPermission()"></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+

@@ -32,7 +32,13 @@
               }
             ],
             "styles": ["src/global.scss", "src/theme/variables.scss"],
-            "scripts": []
+            "scripts": [],
+            "allowedCommonJsDependencies": [
+              "canvg",
+              "raf",
+              "rgbcolor"
+            ]
+
           },
           "configurations": {
             "production": {

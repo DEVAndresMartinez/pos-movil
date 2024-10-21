@@ -1,0 +1,30 @@
+.layout-breadcrumb {
+    margin-bottom: 2rem;
+
+    ol {
+        display: flex;
+        align-items: center;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        gap: 1rem;
+        flex-wrap: wrap;
+        color: var(--text-color-secondary);
+        
+        a {
+            color: var(--text-color-secondary);
+        }
+    }
+}
+
+@media screen and (max-width: $breakpoint - 1) {
+    .layout-breadcrumb {
+        margin-bottom: 14px;
+        font-size: 12px;
+    
+        ol {
+            display: flex;
+            gap: .5rem;
+        }
+    }   
+}

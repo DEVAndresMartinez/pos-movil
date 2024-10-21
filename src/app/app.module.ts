@@ -10,6 +10,7 @@ import { AuthInterceptor } from './modules/components/auth/interceptors/auth.int
 import { SpinnerInterceptor } from './core/interceptors/spinner.interceptor';
 import { SpinnerComponent } from './shared/spinner/spinner.component';
 import { RouterModule } from '@angular/router';
+import { BrowserModule } from '@angular/platform-browser';
 
 @NgModule({
     imports: [
@@ -17,6 +18,7 @@ import { RouterModule } from '@angular/router';
         AppLayoutModule,
         AppRoutingModule,
         CommonModule,
+        BrowserModule,
         BrowserAnimationsModule,
         RouterModule.forRoot([])
     ],

@@ -1,0 +1,7 @@
+{
+  "name": "POS-MOVIL",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
